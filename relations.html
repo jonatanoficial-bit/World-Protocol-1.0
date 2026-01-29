@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Centro de Relações</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-relations">
+    <header class="module-header">
+      <button class="btn secondary" id="backBtn">Voltar</button>
+      <h1>Centro de Relações</h1>
+    </header>
+    <main class="module-content">
+      <div class="nations-list" id="nationsList"></div>
+      <div class="nation-details hidden" id="nationDetails">
+        <h3 id="selectedNationName"></h3>
+        <p id="selectedNationStatus"></p>
+        <div class="action-buttons">
+          <button class="btn" id="allianceBtn">Propor Aliança</button>
+          <button class="btn" id="peaceBtn">Propor Paz</button>
+        </div>
+      </div>
+    </main>
+    <script src="js/relations.js"></script>
+  </body>
+</html>

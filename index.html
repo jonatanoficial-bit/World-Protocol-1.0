@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estratégia 2030 - Vale Games</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Fonts for a futuristic and premium look -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <!-- Splash screen with logo -->
+  <div id="splash" class="screen active">
+    <div class="logo-container">
+      <div class="logo-text">VALE GAMES</div>
+    </div>
+  </div>
+
+  <!-- Main menu -->
+  <div id="menu" class="screen">
+    <h1 class="title">Estratégia 2030</h1>
+    <div class="menu-buttons">
+      <button id="newGameBtn" class="btn">Novo Jogo</button>
+      <button id="continueBtn" class="btn">Continuar</button>
+    </div>
+  </div>
+
+  <!-- New game screen -->
+  <div id="new-game" class="screen">
+    <h2>Novo Jogo</h2>
+    <form id="newGameForm">
+      <label for="playerName">Seu nome:</label>
+      <input type="text" id="playerName" required />
+      <label for="nation">Escolha sua nação:</label>
+      <select id="nation" required>
+        <option value="Brasil">Brasil</option>
+        <option value="Estados Unidos">Estados Unidos</option>
+        <option value="Rússia">Rússia</option>
+        <option value="China">China</option>
+        <option value="Europa">Europa</option>
+        <option value="Japão">Japão</option>
+      </select>
+      <button type="submit" class="btn">Começar</button>
+    </form>
+    <button id="backToMenuFromNew" class="btn secondary">Voltar</button>
+  </div>
+
+  <!-- Load game screen -->
+  <div id="load-game" class="screen">
+    <h2>Continuar Jogo</h2>
+    <div id="saveSlots" class="save-slots"></div>
+    <button id="backToMenuFromLoad" class="btn secondary">Voltar</button>
+  </div>
+
+  <!-- Story message screen -->
+  <div id="message" class="screen">
+    <div id="message-content" class="message-box"></div>
+    <button id="continueToLobby" class="btn hidden">Continuar</button>
+  </div>
+
+  <!-- Lobby screen -->
+  <div id="lobby" class="screen lobby-screen">
+    <header class="lobby-header">
+      <div class="player-info">
+        <span id="playerNameDisplay"></span>
+        <span id="playerNationDisplay"></span>
+      </div>
+      <div class="funds-info">
+        Saldo: <span id="fundsDisplay"></span>
+      </div>
+    </header>
+    <div class="lobby-buttons">
+      <button id="relationsBtn" class="lobby-btn">
+        <img src="assets/images/icons/icon-relations.png" alt="Relações" />
+        <span>Relações</span>
+      </button>
+      <button id="warBtn" class="lobby-btn">
+        <img src="assets/images/icons/icon-war.png" alt="Guerra" />
+        <span>Guerra</span>
+      </button>
+      <button id="commerceBtn" class="lobby-btn">
+        <img src="assets/images/icons/icon-commerce.png" alt="Comércio" />
+        <span>Comércio</span>
+      </button>
+      <button id="infraBtn" class="lobby-btn">
+        <img
+          src="assets/images/icons/icon-infrastructure.png"
+          alt="Infraestrutura"
+        />
+        <span>Infraestrutura</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main script for page navigation and game state -->
+  <script src="js/main.js"></script>
+</body>
+</html>

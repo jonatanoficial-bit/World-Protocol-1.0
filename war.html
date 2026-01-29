@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Central de Guerra</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-war">
+    <header class="module-header">
+      <button class="btn secondary" id="backBtn">Voltar</button>
+      <h1>Central de Guerra</h1>
+    </header>
+    <main class="module-content">
+      <section class="select-war-target">
+        <h3>Escolha o alvo</h3>
+        <select id="targetNation" class="target-select"></select>
+        <button class="btn" id="startWarBtn">Iniciar Guerra</button>
+      </section>
+      <section class="troop-management">
+        <h3>Gerenciar Tropas</h3>
+        <div class="branch" data-branch="army">
+          <h4>Exército</h4>
+          <div class="controls">
+            <button class="btn" data-action="minus">-</button>
+            <span id="armyCount">0</span>
+            <button class="btn" data-action="plus">+</button>
+          </div>
+        </div>
+        <div class="branch" data-branch="navy">
+          <h4>Marinha</h4>
+          <div class="controls">
+            <button class="btn" data-action="minus">-</button>
+            <span id="navyCount">0</span>
+            <button class="btn" data-action="plus">+</button>
+          </div>
+        </div>
+        <div class="branch" data-branch="airforce">
+          <h4>Aeronáutica</h4>
+          <div class="controls">
+            <button class="btn" data-action="minus">-</button>
+            <span id="airforceCount">0</span>
+            <button class="btn" data-action="plus">+</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="js/war.js"></script>
+  </body>
+</html>

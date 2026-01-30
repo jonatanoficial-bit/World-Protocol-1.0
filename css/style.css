@@ -321,6 +321,25 @@ body.app-shell {
 }
 .modal header h3{ margin: 0; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
 .modal .body{ padding: 14px 16px; max-height: 60vh; overflow:auto; }
+
+/* ===== Event modal / typewriter ===== */
+.typewriter{
+  font-size: 14.5px;
+  line-height: 1.55;
+  opacity: .95;
+  white-space: pre-wrap;
+}
+.tw-cursor{
+  display: inline-block;
+  width: 10px;
+  margin-left: 2px;
+  opacity: .9;
+  animation: twBlink 1s steps(1,end) infinite;
+}
+@keyframes twBlink{
+  0%, 49% { opacity: .9; }
+  50%, 100% { opacity: 0; }
+}
 .mission{
   padding: 12px;
   border-radius: 14px;

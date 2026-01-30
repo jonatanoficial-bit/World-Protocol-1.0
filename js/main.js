@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ignore
   }
 
+  // Feed the event engine once at app start.
+  try { WP.setEventPool(content.events || []); } catch {}
+
   // Populate nation select dynamically (base + DLC)
   const nationSelect = document.getElementById('nation');
   if (nationSelect && content.nations?.length) {
@@ -219,6 +222,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const missionsBackdrop = document.getElementById('missionsModal');
   const missionsList = document.getElementById('missionsList');
   const closeMissions = document.getElementById('closeMissions');
+
+  // Event modal
+  const eventBackdrop = document.getElementById('eventModal');
+  const eventTitle = document.getElementById('eventTitle');
+  const eventSpeaker = document.getElementById('eventSpeaker');
+  const eventText = document.getElementById('eventText');
+  const eventChoices = document.getElementById('eventChoices');
+  const closeEvent = document.getElementById('closeEvent');
+  const skipEvent = document.getElementById('skipEvent');
   const hudCommander = document.getElementById('hudCommander');
   const hudDate = document.getElementById('hudDate');
   const hudFunds = document.getElementById('hudFunds');
@@ -294,6 +306,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     show('lobby');
     updateHud(st);
 
+    // If the player left the game with an unresolved decision, bring it back.
+    if (st.pendingEvent) {
+      // Use a microtask to ensure the modal elements are laid out.
+      setTimeout(() => showEventModal(st, slot), 50);
+    }
+
     // Ensure we are at base URL (prevents odd "returns" after module navigation)
     if (location.search) {
       history.replaceState({}, '', 'index.html');
@@ -313,9 +331,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Next Turn
     hudNextTurn.onclick = () => {
       const fresh = WP.loadState(slot);
+      // If an event is pending, show it (player must decide)
+      if (fresh.pendingEvent) {
+        showEventModal(fresh, slot);
+        return;
+      }
+
       WP.nextTurn(fresh);
       WP.saveState(slot, fresh);
       updateHud(fresh);
+
+      // If nextTurn queued a decision event, present it immediately.
+      if (fresh.pendingEvent) {
+        showEventModal(fresh, slot);
+      }
 
       if (fresh.flags.gameOver) {
         alert('GAME OVER: Falência total.');
@@ -332,6 +361,99 @@ document.addEventListener('DOMContentLoaded', async () => {
       // lightweight feedback
       showToast('Jogo salvo.');
     };
+  }
+
+  // --- Event Modal (typewriter + decisions) ---
+  let twTimer = null;
+  function typewriter(el, text, speed = 16) {
+    if (twTimer) clearInterval(twTimer);
+    el.innerHTML = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'tw-cursor';
+    cursor.textContent = '▌';
+    el.appendChild(document.createTextNode(''));
+    el.appendChild(cursor);
+    let i = 0;
+    twTimer = setInterval(() => {
+      if (i >= text.length) {
+        clearInterval(twTimer);
+        twTimer = null;
+        cursor.remove();
+        return;
+      }
+      // Insert before cursor
+      const ch = text[i++];
+      cursor.before(document.createTextNode(ch));
+    }, speed);
+  }
+
+  function showEventModal(state, slot) {
+    const ev = state.pendingEvent;
+    if (!ev) return;
+
+    eventTitle.textContent = (ev.title || 'COMUNICAÇÃO OFICIAL').toUpperCase();
+    eventSpeaker.textContent = ev.speaker || 'Centro de Operações • Governo Provisório';
+
+    // Build choices (disabled until typing finishes unless skip)
+    eventChoices.innerHTML = '';
+    const buttons = [];
+    (ev.choices || []).forEach((c, idx) => {
+      const b = document.createElement('button');
+      b.className = 'btn';
+      b.disabled = true;
+      b.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+          <div style="font-weight:800; letter-spacing:.4px;">${c.label}</div>
+          ${c.hint ? `<div style="opacity:.85; font-size:12px;">${c.hint}</div>` : ''}
+        </div>
+      `;
+      b.addEventListener('click', () => {
+        const fresh = WP.loadState(slot);
+        const r = WP.resolvePendingEvent(fresh, idx);
+        if (r.ok) {
+          WP.saveState(slot, fresh);
+          updateHud(fresh);
+          hideEventModal();
+          showToast('Decisão registrada.');
+        }
+      });
+      eventChoices.appendChild(b);
+      buttons.push(b);
+    });
+
+    function enableChoices() {
+      buttons.forEach((b) => (b.disabled = false));
+    }
+
+    // Typewriter
+    typewriter(eventText, ev.text || '—');
+    // Enable choices after estimated duration
+    const est = Math.min(2600, Math.max(900, (ev.text || '').length * 16));
+    setTimeout(enableChoices, est);
+
+    // Controls
+    skipEvent.onclick = () => {
+      if (twTimer) {
+        clearInterval(twTimer);
+        twTimer = null;
+      }
+      eventText.textContent = ev.text || '—';
+      enableChoices();
+    };
+    closeEvent.onclick = () => hideEventModal();
+    eventBackdrop.addEventListener('click', (e) => {
+      if (e.target === eventBackdrop) hideEventModal();
+    });
+
+    eventBackdrop.classList.add('show');
+  }
+
+  function hideEventModal() {
+    if (twTimer) {
+      clearInterval(twTimer);
+      twTimer = null;
+    }
+    eventBackdrop.classList.remove('show');
   }
 
   // Lobby navigation cards (pass slot in URL for reliability on GitHub Pages)

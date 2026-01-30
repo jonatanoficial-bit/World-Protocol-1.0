@@ -1,0 +1,137 @@
+[
+  {
+    "id": "int_insurgency_cells_01",
+    "type": "internal",
+    "title": "Ameaça Interna",
+    "speaker": "Agência de Inteligência",
+    "text": "Células insurgentes foram identificadas em distritos-chave. Uma operação pode neutralizar líderes, mas pode gerar danos colaterais.",
+    "weight": 1.5,
+    "cooldown": 10,
+    "conditions": { "threatAbove": 18 },
+    "choices": [
+      {
+        "label": "Operação cirúrgica",
+        "hint": "Menor risco civil, maior custo.",
+        "effects": { "funds": -400000, "threat": -6, "stability": 2 }
+      },
+      {
+        "label": "Operação total",
+        "hint": "Eficaz, mas pesa politicamente.",
+        "effects": { "funds": -550000, "threat": -9, "popularity": -5, "pressure": 4 }
+      },
+      {
+        "label": "Monitorar e esperar",
+        "hint": "Economiza agora, aumenta risco.",
+        "effects": { "threat": 5, "stability": -3 }
+      }
+    ]
+  },
+  {
+    "id": "int_refugee_wave_02",
+    "type": "internal",
+    "title": "Crise Humanitária",
+    "speaker": "Defesa Civil",
+    "text": "Uma onda de deslocados chega à capital. Abrigos improvisados reduzem tensão, mas drenam recursos. Negligenciar pode explodir em protestos.",
+    "weight": 1.2,
+    "cooldown": 9,
+    "conditions": { "stabilityBelow": 70 },
+    "choices": [
+      {
+        "label": "Montar abrigos e assistência",
+        "hint": "Aumenta apoio, custo imediato.",
+        "effects": { "funds": -450000, "popularity": 6, "pressure": -3 }
+      },
+      {
+        "label": "Delegar a ONGs",
+        "hint": "Custo menor, controle menor.",
+        "effects": { "funds": -200000, "popularity": 2 }
+      },
+      {
+        "label": "Bloquear entrada",
+        "hint": "Evita gastos, aumenta tensão.",
+        "effects": { "pressure": 6, "popularity": -4, "stability": -2 }
+      }
+    ]
+  },
+  {
+    "id": "int_strike_03",
+    "type": "internal",
+    "title": "Paralisação Geral",
+    "speaker": "Ministério do Trabalho",
+    "text": "Sindicatos anunciam greve em setores estratégicos. Conceder aumenta gastos; reprimir aumenta pressão internacional e instabilidade.",
+    "weight": 1.1,
+    "cooldown": 11,
+    "conditions": { "popularityBelow": 60 },
+    "choices": [
+      {
+        "label": "Conceder reajuste",
+        "hint": "Aumenta apoio, reduz renda líquida.",
+        "effects": { "funds": -350000, "popularity": 5, "pressure": -2 }
+      },
+      {
+        "label": "Negociar com mediação",
+        "hint": "Equilíbrio.",
+        "effects": { "funds": -150000, "popularity": 2 }
+      },
+      {
+        "label": "Reprimir com força",
+        "hint": "Rápido, mas caro politicamente.",
+        "effects": { "stability": 3, "pressure": 7, "popularity": -6 }
+      }
+    ]
+  },
+  {
+    "id": "int_science_breakthrough_04",
+    "type": "internal",
+    "title": "Centro de Pesquisa",
+    "speaker": "Ministério da Ciência",
+    "text": "Pesquisadores propõem um programa acelerado de IA para análise de padrões estratégicos. Pode aumentar tecnologia e renda no longo prazo.",
+    "weight": 1.0,
+    "cooldown": 14,
+    "conditions": { "fundsAbove": 5000000 },
+    "choices": [
+      {
+        "label": "Financiar programa total",
+        "hint": "Avanço alto.",
+        "effects": { "funds": -700000, "tech": 6, "baseIncome": 90000, "dominance": 1 }
+      },
+      {
+        "label": "Financiar parcialmente",
+        "hint": "Menos custo.",
+        "effects": { "funds": -350000, "tech": 3, "baseIncome": 40000 }
+      },
+      {
+        "label": "Adiar",
+        "hint": "Sem custo, perde oportunidade.",
+        "effects": { "pressure": 2 }
+      }
+    ]
+  },
+  {
+    "id": "int_public_broadcast_05",
+    "type": "internal",
+    "title": "Rede Nacional",
+    "speaker": "Comunicação Institucional",
+    "text": "Uma transmissão nacional pode reduzir pânico e reforçar legitimidade. Falhas de execução, porém, podem gerar o efeito oposto.",
+    "weight": 0.9,
+    "cooldown": 10,
+    "conditions": { "pressureAbove": 25 },
+    "choices": [
+      {
+        "label": "Transmissão com transparência",
+        "hint": "Aumenta confiança.",
+        "effects": { "popularity": 5, "pressure": -4 }
+      },
+      {
+        "label": "Transmissão de força",
+        "hint": "Eleva moral, aumenta pressão externa.",
+        "effects": { "morale": 4, "pressure": 3, "stability": 2 }
+      },
+      {
+        "label": "Cancelar",
+        "hint": "Evita riscos, aumenta rumores.",
+        "effects": { "pressure": 5, "popularity": -2 }
+      }
+    ]
+  }
+]

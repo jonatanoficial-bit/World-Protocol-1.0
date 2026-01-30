@@ -28,6 +28,16 @@
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   }
 
+  // In-memory event pool (loaded at app start). Kept out of the save state so
+  // DLCs can extend events without migrating player saves.
+  let EVENT_POOL = [];
+  function setEventPool(list) {
+    EVENT_POOL = Array.isArray(list) ? list : [];
+  }
+  function getEventPool() {
+    return EVENT_POOL;
+  }
+
   function getActiveSlot() {
     const k = localStorage.getItem(ACTIVE_SLOT_KEY);
     return SLOT_KEYS.includes(k) ? k : null;
@@ -59,15 +69,37 @@
   }
 
   async function loadContent() {
-    const content = { nations: [], missions: [] };
+    const content = { nations: [], missions: [], events: [] };
 
     // Base content (always)
     try {
       const base = await fetchJSON('dlc/base/manifest.json');
       if (Array.isArray(base.nations)) content.nations.push(...base.nations);
       if (Array.isArray(base.missions)) content.missions.push(...base.missions);
+      // Base events (optional)
+      if (Array.isArray(base.events)) {
+        content.events.push(...base.events);
+      }
     } catch (e) {
       console.warn('Base manifest missing or blocked:', e);
+    }
+
+    // Built-in event packs (always try). These live in /events so they work on GitHub Pages.
+    // If a file is missing, we just skip.
+    const builtinEventFiles = [
+      'events/political.json',
+      'events/military.json',
+      'events/economic.json',
+      'events/international.json',
+      'events/internal.json',
+    ];
+    for (const p of builtinEventFiles) {
+      try {
+        const pack = await fetchJSON(p);
+        if (Array.isArray(pack)) content.events.push(...pack);
+      } catch {
+        // ignore
+      }
     }
 
     // Enabled DLCs (optional)
@@ -78,6 +110,7 @@
           const man = await fetchJSON(dlcPath);
           if (Array.isArray(man.nations)) content.nations.push(...man.nations);
           if (Array.isArray(man.missions)) content.missions.push(...man.missions);
+          if (Array.isArray(man.events)) content.events.push(...man.events);
         } catch (e) {
           console.warn('Failed to load DLC:', dlcPath, e);
         }
@@ -86,6 +119,16 @@
 
     // de-dup nations
     content.nations = [...new Set(content.nations)].filter(Boolean);
+
+    // Normalize events (de-dup by id)
+    const seen = new Set();
+    content.events = (content.events || []).filter((ev) => {
+      const id = ev?.id;
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
     return content;
   }
 
@@ -104,6 +147,7 @@
       meta: { version: '1.1.0', createdAt: now, updatedAt: now },
       player: { name, nation },
       calendar: { year: 2030, month: 1 },
+      turn: 0,
       economy: {
         funds: 12_500_000,
         baseIncome: 500_000,
@@ -119,11 +163,18 @@
       },
       world: {
         stability: 62,
+        popularity: 55,
+        pressure: 28,
+        morale: 58,
+        tech: 10,
+        threat: 18,
         dominance: 2,
         atWarWith: [],
         diplomacy: {},
       },
       missions,
+      pendingEvent: null,
+      eventHistory: {},
       log: [
         { t: now, type: 'start', text: 'Protocolo ativado. Você assumiu o comando temporário do país.' }
       ],
@@ -154,26 +205,110 @@
     return Math.round((base + boost) * stabMul);
   }
 
-  function randomEvent(state) {
-    const r = Math.random();
-    const now = Date.now();
-    if (r < 0.20) {
-      // Disaster
-      const loss = rand(200_000, 900_000);
-      state.economy.funds -= loss;
-      state.world.stability = clamp(state.world.stability - rand(1, 4), 0, 100);
-      state.log.push({ t: now, type: 'event', text: `Desastre natural causa prejuízo de ${formatMoney(loss)}.` });
-    } else if (r < 0.38) {
-      // Smuggling ring busted
-      const gain = rand(150_000, 650_000);
-      state.economy.funds += gain;
-      state.world.stability = clamp(state.world.stability + rand(1, 3), 0, 100);
-      state.log.push({ t: now, type: 'event', text: `Operação interna apreende contrabando. +${formatMoney(gain)}.` });
-    } else if (r < 0.48) {
-      // Diplomatic fallout
-      state.world.stability = clamp(state.world.stability - rand(1, 3), 0, 100);
-      state.log.push({ t: now, type: 'event', text: 'Tensão diplomática aumenta a instabilidade.' });
+  // --- Event Engine ---
+  // Conditions are intentionally simple and safe for vanilla.
+  function matchesConditions(state, cond = {}) {
+    const w = state.world;
+    const e = state.economy;
+    const m = state.military;
+    const t = state.turn || 0;
+
+    if (cond.turnBelow != null && !(t < cond.turnBelow)) return false;
+    if (cond.turnAbove != null && !(t > cond.turnAbove)) return false;
+
+    if (cond.stabilityBelow != null && !(w.stability < cond.stabilityBelow)) return false;
+    if (cond.stabilityAbove != null && !(w.stability > cond.stabilityAbove)) return false;
+    if (cond.popularityBelow != null && !(w.popularity < cond.popularityBelow)) return false;
+    if (cond.popularityAbove != null && !(w.popularity > cond.popularityAbove)) return false;
+    if (cond.pressureAbove != null && !(w.pressure > cond.pressureAbove)) return false;
+    if (cond.moraleBelow != null && !(w.morale < cond.moraleBelow)) return false;
+    if (cond.fundsBelow != null && !(e.funds < cond.fundsBelow)) return false;
+    if (cond.fundsAbove != null && !(e.funds > cond.fundsAbove)) return false;
+    if (cond.techAbove != null && !(w.tech > cond.techAbove)) return false;
+    if (cond.dominanceBelow != null && !(w.dominance < cond.dominanceBelow)) return false;
+    if (cond.threatAbove != null && !(w.threat > cond.threatAbove)) return false;
+    if (cond.armyBelow != null && !(m.army < cond.armyBelow)) return false;
+    if (cond.atWar === true && !(w.atWarWith?.length)) return false;
+    if (cond.atWar === false && (w.atWarWith?.length)) return false;
+    return true;
+  }
+
+  function applyEffects(state, effects = {}) {
+    const w = state.world;
+    const e = state.economy;
+    const mil = state.military;
+
+    // Economy
+    if (effects.funds != null) e.funds += Number(effects.funds);
+    if (effects.baseIncome != null) e.baseIncome += Number(effects.baseIncome);
+    if (effects.debt != null) e.debt += Number(effects.debt);
+
+    // World
+    if (effects.stability != null) w.stability = clamp(w.stability + Number(effects.stability), 0, 100);
+    if (effects.popularity != null) w.popularity = clamp(w.popularity + Number(effects.popularity), 0, 100);
+    if (effects.pressure != null) w.pressure = clamp(w.pressure + Number(effects.pressure), 0, 100);
+    if (effects.morale != null) w.morale = clamp(w.morale + Number(effects.morale), 0, 100);
+    if (effects.tech != null) w.tech = clamp(w.tech + Number(effects.tech), 0, 100);
+    if (effects.threat != null) w.threat = clamp(w.threat + Number(effects.threat), 0, 100);
+    if (effects.dominance != null) w.dominance = clamp(w.dominance + Number(effects.dominance), 0, 100);
+
+    // Military
+    if (effects.army != null) mil.army = Math.max(0, mil.army + Number(effects.army));
+    if (effects.navy != null) mil.navy = Math.max(0, mil.navy + Number(effects.navy));
+    if (effects.airforce != null) mil.airforce = Math.max(0, mil.airforce + Number(effects.airforce));
+  }
+
+  function pickEvent(state) {
+    const pool = EVENT_POOL || [];
+    if (!pool.length) return null;
+
+    const nowTurn = state.turn || 0;
+    const history = state.eventHistory || {};
+
+    const candidates = pool
+      .filter((ev) => ev && ev.id && Array.isArray(ev.choices) && ev.choices.length)
+      .filter((ev) => matchesConditions(state, ev.conditions || {}))
+      .filter((ev) => {
+        const last = history[ev.id];
+        const cooldown = Number(ev.cooldown || 6);
+        if (last == null) return true;
+        return nowTurn - last >= cooldown;
+      });
+
+    if (!candidates.length) return null;
+    // Weighted random
+    const total = candidates.reduce((s, ev) => s + (Number(ev.weight || 1)), 0);
+    let roll = Math.random() * total;
+    for (const ev of candidates) {
+      roll -= Number(ev.weight || 1);
+      if (roll <= 0) return ev;
     }
+    return candidates[candidates.length - 1];
+  }
+
+  function queueEvent(state) {
+    if (state.pendingEvent) return null;
+    // Trigger probability (prevents event spam)
+    const chance = 0.55; // 55% per month
+    if (Math.random() > chance) return null;
+    const ev = pickEvent(state);
+    if (!ev) return null;
+
+    state.pendingEvent = {
+      id: ev.id,
+      type: ev.type || 'event',
+      title: ev.title || 'COMUNICAÇÃO OFICIAL',
+      speaker: ev.speaker || 'Centro de Operações • Governo Provisório',
+      text: ev.text || '',
+      choices: ev.choices.map((c) => ({
+        label: c.label,
+        hint: c.hint || '',
+        effects: c.effects || {},
+      })),
+    };
+    state.eventHistory = state.eventHistory || {};
+    state.eventHistory[ev.id] = state.turn || 0;
+    return state.pendingEvent;
   }
 
   function progressMissions(state) {
@@ -186,6 +321,23 @@
       m.completed = true;
       state.log.push({ t: Date.now(), type: 'mission', text: `Missão concluída: ${m.title}.` });
     }
+  }
+
+  function resolvePendingEvent(state, choiceIndex) {
+    if (!state.pendingEvent) return { ok: false };
+    const idx = Number(choiceIndex);
+    const choice = state.pendingEvent.choices?.[idx];
+    if (!choice) return { ok: false };
+
+    applyEffects(state, choice.effects || {});
+    state.log.push({
+      t: Date.now(),
+      type: 'decision',
+      text: `Decisão aplicada: ${choice.label} (${state.pendingEvent.id}).`,
+    });
+    state.pendingEvent = null;
+    checkEndings(state);
+    return { ok: true };
   }
 
   function claimMissionReward(state, missionId) {
@@ -211,6 +363,9 @@
   function nextTurn(state) {
     if (state.flags.gameOver || state.flags.victory) return;
 
+    // If there is a pending event, force player to resolve it first.
+    if (state.pendingEvent) return;
+
     const inc = calcIncome(state);
     const upkeep = calcUpkeep(state);
     state.economy.funds += inc;
@@ -219,7 +374,13 @@
     // Stability drifts
     state.world.stability = clamp(state.world.stability + rand(-2, 2), 0, 100);
 
-    randomEvent(state);
+    // Small ambient drift
+    state.world.popularity = clamp(state.world.popularity + rand(-2, 2), 0, 100);
+    state.world.pressure = clamp(state.world.pressure + rand(-2, 2), 0, 100);
+    state.world.morale = clamp(state.world.morale + rand(-2, 2), 0, 100);
+
+    // Narrative event (decision-based)
+    queueEvent(state);
     progressMissions(state);
 
     // Advance month
@@ -234,6 +395,7 @@
     if (state.world.stability >= 65 && power >= 1200) state.world.dominance = clamp(state.world.dominance + rand(0, 2), 0, 100);
 
     state.meta.updatedAt = Date.now();
+    state.turn = (state.turn || 0) + 1;
     checkEndings(state);
   }
 
@@ -248,10 +410,13 @@
     saveState,
     findFreeSlot,
     loadContent,
+    setEventPool,
+    getEventPool,
     createNewState,
     calcIncome,
     calcUpkeep,
     nextTurn,
+    resolvePendingEvent,
     claimMissionReward,
   };
 })();

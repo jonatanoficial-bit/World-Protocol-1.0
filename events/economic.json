@@ -1,0 +1,137 @@
+[
+  {
+    "id": "eco_inflation_spike_01",
+    "type": "economic",
+    "title": "Alerta Econômico",
+    "speaker": "Banco Central",
+    "text": "A inflação acelera e ameaça corroer o poder de compra. Controlar preços reduz tensões sociais, mas pode sufocar mercados.",
+    "weight": 1.4,
+    "cooldown": 9,
+    "conditions": { "pressureAbove": 30 },
+    "choices": [
+      {
+        "label": "Controle temporário de preços",
+        "hint": "Reduz pressão, desacelera receita.",
+        "effects": { "pressure": -6, "baseIncome": -60000, "popularity": 3 }
+      },
+      {
+        "label": "Elevar juros",
+        "hint": "Freia inflação, cai popularidade.",
+        "effects": { "pressure": -4, "popularity": -4, "funds": 250000 }
+      },
+      {
+        "label": "Deixar o mercado ajustar",
+        "hint": "Sem custo imediato, risco social.",
+        "effects": { "pressure": 6, "popularity": -2 }
+      }
+    ]
+  },
+  {
+    "id": "eco_black_market_02",
+    "type": "economic",
+    "title": "Mercado Paralelo",
+    "speaker": "Agência de Inteligência Fiscal",
+    "text": "O comércio ilegal cresce nas zonas de calamidade. Reprimir aumenta receita, mas exige operações e pode gerar confrontos.",
+    "weight": 1.2,
+    "cooldown": 8,
+    "conditions": { "stabilityBelow": 65 },
+    "choices": [
+      {
+        "label": "Operação total",
+        "hint": "Recupera recursos, aumenta tensão.",
+        "effects": { "funds": 700000, "pressure": 4, "stability": 2 }
+      },
+      {
+        "label": "Operação seletiva",
+        "hint": "Menos risco, ganho moderado.",
+        "effects": { "funds": 350000, "pressure": 1 }
+      },
+      {
+        "label": "Tolerância vigiada",
+        "hint": "Evita conflito, perde receita.",
+        "effects": { "funds": -150000, "popularity": 2, "pressure": 2 }
+      }
+    ]
+  },
+  {
+    "id": "eco_foreign_investment_03",
+    "type": "economic",
+    "title": "Oferta Externa",
+    "speaker": "Ministério da Economia",
+    "text": "Um consórcio estrangeiro oferece investimento em infraestrutura crítica em troca de garantias e privilégios comerciais.",
+    "weight": 1.0,
+    "cooldown": 14,
+    "conditions": { "turnAbove": 4 },
+    "choices": [
+      {
+        "label": "Aceitar com garantias",
+        "hint": "Entrada de caixa e renda futura.",
+        "effects": { "funds": 1200000, "baseIncome": 90000, "pressure": 3 }
+      },
+      {
+        "label": "Aceitar com limites",
+        "hint": "Menos dinheiro, mais soberania.",
+        "effects": { "funds": 700000, "baseIncome": 50000, "pressure": 1 }
+      },
+      {
+        "label": "Recusar",
+        "hint": "Soberania preservada, perde oportunidade.",
+        "effects": { "popularity": 2, "pressure": 2 }
+      }
+    ]
+  },
+  {
+    "id": "eco_supply_chain_04",
+    "type": "economic",
+    "title": "Cadeia de Suprimentos",
+    "speaker": "Agência Nacional de Logística",
+    "text": "O transporte interno falha e alimentos não chegam a certas regiões. Investir em rotas melhora estabilidade, mas custa caro.",
+    "weight": 1.1,
+    "cooldown": 10,
+    "conditions": { "stabilityBelow": 70 },
+    "choices": [
+      {
+        "label": "Investimento emergencial",
+        "hint": "Ordem social melhora.",
+        "effects": { "funds": -650000, "stability": 6, "popularity": 2 }
+      },
+      {
+        "label": "Subsídio a transporte privado",
+        "hint": "Impacto moderado.",
+        "effects": { "funds": -300000, "stability": 3 }
+      },
+      {
+        "label": "Racionamento",
+        "hint": "Barato, impopular.",
+        "effects": { "funds": 100000, "popularity": -5, "pressure": 3 }
+      }
+    ]
+  },
+  {
+    "id": "eco_industry_boost_05",
+    "type": "economic",
+    "title": "Complexo Industrial",
+    "speaker": "Ministério da Indústria",
+    "text": "Fábricas pedem autorização para converter linhas civis em produção militar e de infraestrutura. Isso acelera reconstrução, mas consome energia e pode gerar inflação.",
+    "weight": 1.0,
+    "cooldown": 12,
+    "conditions": { "techAbove": 8 },
+    "choices": [
+      {
+        "label": "Autorizar conversão total",
+        "hint": "Aumenta renda e poder, eleva pressão.",
+        "effects": { "baseIncome": 140000, "dominance": 1, "pressure": 4, "funds": -250000 }
+      },
+      {
+        "label": "Autorizar parcialmente",
+        "hint": "Menos risco.",
+        "effects": { "baseIncome": 80000, "pressure": 2 }
+      },
+      {
+        "label": "Manter como está",
+        "hint": "Evita inflação, perde tempo.",
+        "effects": { "pressure": 2, "dominance": -1 }
+      }
+    ]
+  }
+]

@@ -432,6 +432,11 @@ input[type="text"], select {
   background: linear-gradient(145deg, #4f9aff, #3b8ac4);
 }
 
+.save-slot-btn.selected{
+  outline: 2px solid rgba(79,154,255,0.85);
+  box-shadow: 0 0 0 6px rgba(79,154,255,0.15);
+}
+
 /* Message screen */
 #message {
   display: flex;
@@ -442,9 +447,61 @@ input[type="text"], select {
   backdrop-filter: blur(4px);
 }
 
+.subtle{opacity:.82}
+
+.message-frame{
+  position: relative;
+  width: min(900px, 94vw);
+  border-radius: 18px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  background: rgba(10, 12, 17, 0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+}
+
+.msg-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.badge{
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1.8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
+}
+
+.sender-title{
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.sender-sub{
+  opacity: .78;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.msg-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
 .message-box {
-  max-width: 600px;
-  padding: 1rem 1.5rem;
+  max-width: 860px;
+  padding: 14px 16px;
   border-radius: 0.5rem;
   background: rgba(10, 12, 17, 0.7);
   font-family: 'Roboto', sans-serif;
@@ -453,6 +510,7 @@ input[type="text"], select {
   color: #e0e6f5;
   text-align: left;
   min-height: 100px;
+  white-space: pre-wrap;
 }
 
 /* Lobby screen */

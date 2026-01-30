@@ -34,7 +34,12 @@
   <!-- New game screen -->
   <div id="new-game" class="screen bg-hero">
     <h2>Novo Jogo</h2>
-    <form id="newGameForm">
+    <p class="subtle" style="margin-top:-6px; max-width:720px; text-align:center">
+      Escolha um <b>slot</b>, defina seu <b>nome</b> e a <b>nação</b> que você comandará.
+      Ao finalizar, você receberá uma mensagem oficial com efeito de máquina de escrever.
+    </p>
+    <div id="newSaveSlots" class="save-slots" style="margin: 10px 0 14px;"></div>
+    <form id="newGameForm" autocomplete="off">
       <label for="playerName">Seu nome:</label>
       <input type="text" id="playerName" required />
       <label for="nation">Escolha sua nação:</label>
@@ -60,8 +65,20 @@
 
   <!-- Story message screen -->
   <div id="message" class="screen bg-hero">
-    <div id="message-content" class="message-box"></div>
-    <button id="continueToLobby" class="btn hidden">Continuar</button>
+    <div class="message-frame">
+      <div class="msg-top">
+        <div class="badge">COMUNICAÇÃO OFICIAL</div>
+        <div class="sender">
+          <div class="sender-title">Presidente do Senado</div>
+          <div class="sender-sub">Governo Provisório • Protocolo de Crise</div>
+        </div>
+      </div>
+      <div id="message-content" class="message-box"></div>
+      <div class="msg-actions">
+        <button id="skipIntro" class="btn secondary">Pular</button>
+        <button id="continueToLobby" class="btn hidden">Confirmar</button>
+      </div>
+    </div>
   </div>
 
   <!-- Lobby screen -->

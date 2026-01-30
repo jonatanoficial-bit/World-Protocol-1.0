@@ -41,8 +41,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     screens[name].classList.add('active');
   }
 
+  function getUrlParam(key) {
+    try {
+      return new URLSearchParams(location.search).get(key);
+    } catch {
+      return null;
+    }
+  }
+
   // Splash -> Menu
-  setTimeout(() => show('menu'), 1500);
+  // Accept slot from URL (when returning from a module)
+  const slotFromUrl = getUrlParam('slot');
+  if (slotFromUrl && WP.SLOT_KEYS.includes(slotFromUrl) && WP.loadState(slotFromUrl)) {
+    WP.setActiveSlot(slotFromUrl);
+  }
+
+  // If we are resuming from a module (index.html?resume=1), jump straight to lobby.
+  const resume = getUrlParam('resume') === '1';
+
+  setTimeout(() => {
+    if (resume && WP.getActiveSlot() && WP.loadState(WP.getActiveSlot())) {
+      startLobby();
+    } else {
+      show('menu');
+    }
+  }, 1500);
 
   // Buttons
   const newGameBtn = document.getElementById('newGameBtn');
@@ -50,7 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const backToMenuFromNew = document.getElementById('backToMenuFromNew');
   const backToMenuFromLoad = document.getElementById('backToMenuFromLoad');
 
-  newGameBtn.addEventListener('click', () => show('newGame'));
+  newGameBtn.addEventListener('click', () => {
+    populateNewSlots();
+    show('newGame');
+  });
   continueBtn.addEventListener('click', () => {
     populateSaves();
     show('loadGame');
@@ -60,13 +86,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // New game
   const newGameForm = document.getElementById('newGameForm');
+  let selectedNewSlot = null;
+
+  function populateNewSlots() {
+    const container = document.getElementById('newSaveSlots');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Default to first free slot, otherwise Slot 1
+    const free = WP.findFreeSlot();
+    selectedNewSlot = free || WP.SLOT_KEYS[0];
+
+    WP.SLOT_KEYS.forEach((key, idx) => {
+      const state = WP.loadState(key);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'save-slot-btn';
+
+      const label = state
+        ? `${idx + 1}. ${state.player?.name} • ${state.player?.nation} • ${WP.monthName(state.calendar?.month ?? 1)}/${state.calendar?.year ?? 2030}`
+        : `${idx + 1}. (vazio)`;
+
+      btn.textContent = label;
+      if (key === selectedNewSlot) btn.classList.add('selected');
+
+      btn.addEventListener('click', () => {
+        selectedNewSlot = key;
+        [...container.querySelectorAll('.save-slot-btn')].forEach((b) => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+
+      container.appendChild(btn);
+    });
+  }
+
   newGameForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('playerName').value.trim();
     const nation = document.getElementById('nation').value;
     if (!name) return;
 
-    const slot = WP.findFreeSlot();
+    const slot = selectedNewSlot || WP.findFreeSlot() || WP.SLOT_KEYS[0];
     const state = WP.createNewState({ name, nation, content });
     WP.saveState(slot, state);
     WP.setActiveSlot(slot);
@@ -102,24 +162,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     show('message');
     const messageEl = document.getElementById('message-content');
     const cont = document.getElementById('continueToLobby');
+    const skip = document.getElementById('skipIntro');
     cont.classList.add('hidden');
     messageEl.textContent = '';
 
     const txt =
-      `Sr(a) ${state.player.name}, fui informado pelas autoridades locais que o centro governamental do nosso país foi invadido e membros do alto escalão foram mortos, incluindo presidente, vice-presidente e ministros. ` +
-      `Sendo assim, o(a) senhor(a), como comandante das forças armadas, a fim de restabelecer a paz e a ordem, precisa assumir temporariamente o comando de nossa nação. ` +
-      `Boa sorte.\n\n— Presidente do Senado`;
+      `Sr(a) ${state.player.name},\n\n` +
+      `Relatório crítico: o Centro Governamental foi invadido. Integrantes do alto escalão foram assassinados, incluindo Presidente, Vice-Presidente, ministros e deputados.\n\n` +
+      `Em regime de emergência e conforme o Protocolo de Continuidade de Estado, o(a) senhor(a) — Comandante Supremo das Forças Armadas — deve assumir o comando provisório da nação (${state.player.nation}).\n\n` +
+      `Objetivos imediatos:\n` +
+      `1) Neutralizar a insurgência interna\n` +
+      `2) Restabelecer ordem e estabilidade\n` +
+      `3) Proteger fronteiras e assegurar soberania\n\n` +
+      `Boa sorte, Comandante. O mundo está observando.`;
 
     let i = 0;
-    const speed = 22;
+    let stopped = false;
+    const speed = 18;
+    const cursor = document.createElement('span');
+    cursor.textContent = '▍';
+    cursor.style.opacity = '0.85';
+    cursor.style.marginLeft = '2px';
+    messageEl.appendChild(cursor);
+
+    function finish() {
+      if (stopped) return;
+      stopped = true;
+      messageEl.textContent = txt;
+      cont.classList.remove('hidden');
+    }
+
     (function type() {
-      messageEl.textContent += txt.charAt(i++);
+      if (stopped) return;
+      // insert before cursor
+      cursor.before(document.createTextNode(txt.charAt(i++)));
       if (i < txt.length) {
         setTimeout(type, speed);
       } else {
+        // remove cursor
+        cursor.remove();
         cont.classList.remove('hidden');
       }
     })();
+
+    if (skip) {
+      skip.onclick = () => {
+        cursor.remove();
+        finish();
+      };
+    }
 
     cont.onclick = () => startLobby();
   }
@@ -203,6 +294,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     show('lobby');
     updateHud(st);
 
+    // Ensure we are at base URL (prevents odd "returns" after module navigation)
+    if (location.search) {
+      history.replaceState({}, '', 'index.html');
+    }
+
     // Missions
     hudMissions.onclick = () => {
       const fresh = WP.loadState(slot);
@@ -238,11 +334,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Lobby navigation cards
-  document.getElementById('relationsBtn').addEventListener('click', () => (location.href = 'relations.html'));
-  document.getElementById('warBtn').addEventListener('click', () => (location.href = 'war.html'));
-  document.getElementById('commerceBtn').addEventListener('click', () => (location.href = 'commerce.html'));
-  document.getElementById('infraBtn').addEventListener('click', () => (location.href = 'infrastructure.html'));
+  // Lobby navigation cards (pass slot in URL for reliability on GitHub Pages)
+  function goModule(page) {
+    const slot = WP.getActiveSlot();
+    if (!slot) return show('menu');
+    location.href = `${page}?slot=${encodeURIComponent(slot)}`;
+  }
+  document.getElementById('relationsBtn').addEventListener('click', () => goModule('relations.html'));
+  document.getElementById('warBtn').addEventListener('click', () => goModule('war.html'));
+  document.getElementById('commerceBtn').addEventListener('click', () => goModule('commerce.html'));
+  document.getElementById('infraBtn').addEventListener('click', () => goModule('infrastructure.html'));
 
   // Toast helper (uses existing CSS .toast)
   function showToast(text) {

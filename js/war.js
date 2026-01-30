@@ -9,7 +9,19 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(location.search);
+  const urlSlot = params.get('slot');
+  if (urlSlot && WP.SLOT_KEYS.includes(urlSlot) && WP.loadState(urlSlot)) {
+    WP.setActiveSlot(urlSlot);
+  }
+
   const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const slot = WP.getActiveSlot();
+      location.href = slot ? `index.html?resume=1&slot=${encodeURIComponent(slot)}` : 'index.html';
+    });
+  }
   const targetSelect = document.getElementById('targetNation');
   const startWarBtn = document.getElementById('startWarBtn');
 

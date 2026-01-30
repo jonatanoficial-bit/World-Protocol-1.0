@@ -15,17 +15,17 @@
       <button class="btn secondary" id="backBtn">Voltar</button>
       <h1>Centro de Relações</h1>
     </header>
-    <main class="module-content">
-      <div class="nations-list" id="nationsList"></div>
-      <div class="nation-details hidden" id="nationDetails">
-        <h3 id="selectedNationName"></h3>
-        <p id="selectedNationStatus"></p>
-        <div class="action-buttons">
-          <button class="btn" id="allianceBtn">Propor Aliança</button>
-          <button class="btn" id="peaceBtn">Propor Paz</button>
-        </div>
-      </div>
+    <main class="module-content split">
+      <section class="panel">
+        <h3 style="margin:0 0 10px">Nações</h3>
+        <div id="nationList" class="stack"></div>
+      </section>
+
+      <section class="panel">
+        <div id="details" class="details"></div>
+      </section>
     </main>
+    <script src="js/core.js"></script>
     <script src="js/relations.js"></script>
   </body>
 </html>

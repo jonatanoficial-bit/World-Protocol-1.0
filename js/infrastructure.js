@@ -1,100 +1,83 @@
 /*
- * infrastructure.js
+ * infrastructure.js — Infraestrutura
  *
- * Provides controls for investing in different infrastructure sectors. Each
- * click adjusts the investment by a fixed amount and updates the funds
- * available in the game state. Sectors can later influence missions
- * and game outcomes when expansion packs are added.
+ * Mobile-first UI for managing monthly investments. Investments are treated
+ * as recurring monthly commitments (they increase monthly upkeep). Some
+ * sectors also lightly improve income via WP.calcIncome.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const backBtn = document.getElementById('backBtn');
-  backBtn.addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
+  backBtn.addEventListener('click', () => (location.href = 'index.html'));
 
-  // Load state
-  let state = null;
-  let slot = null;
-  for (let i = 1; i <= 3; i++) {
-    const key = `save-slot-${i}`;
-    const data = localStorage.getItem(key);
-    if (data) {
-      state = JSON.parse(data);
-      slot = key;
-      break;
-    }
-  }
-  if (!state) {
-    window.location.href = 'index.html';
-    return;
-  }
+  const slot = WP.getActiveSlot();
+  if (!slot) return (location.href = 'index.html');
+  let state = WP.loadState(slot);
+  if (!state) return (location.href = 'index.html');
 
-  // Initialize investments
-  if (!state.investments) {
-    state.investments = {};
-  }
+  const fundsEl = document.getElementById('fundsDisplay');
+  const netEl = document.getElementById('netPreview');
+  const bodyEl = document.getElementById('infraBody');
+
   const sectors = [
-    'Transporte',
-    'Saúde',
-    'Educação',
-    'Pesquisa Científica',
-    'Corrida Espacial',
+    { key: 'transport', label: 'Transporte', hint: 'Logística, estradas, portos' },
+    { key: 'health', label: 'Saúde', hint: 'Hospitais, resposta a crises' },
+    { key: 'education', label: 'Educação', hint: 'Capacitação, estabilidade' },
+    { key: 'science', label: 'Pesquisa', hint: 'Tecnologia e inovação' },
+    { key: 'space', label: 'Corrida Espacial', hint: 'Satélites e vantagem estratégica' },
   ];
-  const tbody = document.getElementById('infraBody');
-  const increment = 100000;
 
-  sectors.forEach((sector) => {
-    if (!state.investments[sector]) state.investments[sector] = 0;
-    const row = document.createElement('tr');
-    const nameCell = document.createElement('td');
-    nameCell.textContent = sector;
-    const investCell = document.createElement('td');
-    investCell.id = `${sector}-invest`;
-    investCell.textContent = formatCurrency(state.investments[sector]);
-    const actionsCell = document.createElement('td');
-    const minusBtn = document.createElement('button');
-    minusBtn.className = 'btn secondary';
-    minusBtn.textContent = '-';
-    minusBtn.addEventListener('click', () => changeInvest(sector, -increment));
-    const plusBtn = document.createElement('button');
-    plusBtn.className = 'btn';
-    plusBtn.textContent = '+';
-    plusBtn.addEventListener('click', () => changeInvest(sector, increment));
-    actionsCell.appendChild(minusBtn);
-    actionsCell.appendChild(plusBtn);
-    row.appendChild(nameCell);
-    row.appendChild(investCell);
-    row.appendChild(actionsCell);
-    tbody.appendChild(row);
-  });
+  const STEP = 100_000;
 
-  function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
+  function render() {
+    if (fundsEl) fundsEl.textContent = WP.formatMoney(state.economy.funds);
+
+    const income = WP.calcIncome(state);
+    const upkeep = WP.calcUpkeep(state);
+    const net = income - upkeep.total;
+    if (netEl) netEl.textContent = `${net >= 0 ? '+' : ''}${WP.formatMoney(net)}/mês`;
+
+    bodyEl.innerHTML = '';
+    sectors.forEach((s) => {
+      const v = state.infrastructure?.[s.key] || 0;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:700">${s.label}</div>
+          <div style="opacity:.78; font-size:12px">${s.hint}</div>
+        </td>
+        <td><b>${WP.formatMoney(v)}</b><div style="opacity:.78; font-size:12px">/mês</div></td>
+        <td>
+          <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap">
+            <button class="btn secondary" data-minus="${s.key}">-100K</button>
+            <button class="btn" data-plus="${s.key}">+100K</button>
+          </div>
+        </td>
+      `;
+      bodyEl.appendChild(tr);
+    });
+
+    bodyEl.querySelectorAll('button[data-minus]').forEach((b) => {
+      b.addEventListener('click', () => change(b.getAttribute('data-minus'), -STEP));
+    });
+    bodyEl.querySelectorAll('button[data-plus]').forEach((b) => {
+      b.addEventListener('click', () => change(b.getAttribute('data-plus'), +STEP));
+    });
   }
 
-  function changeInvest(sector, delta) {
-    if (delta > 0) {
-      if (state.funds < delta) {
-        alert('Fundos insuficientes.');
-        return;
-      }
-      state.funds -= delta;
-      state.investments[sector] += delta;
-    } else {
-      // Refund 70%
-      const current = state.investments[sector];
-      const value = Math.min(Math.abs(delta), current);
-      state.investments[sector] -= value;
-      state.funds += Math.round(value * 0.7);
-    }
-    // Update cell
-    document.getElementById(`${sector}-invest`).textContent = formatCurrency(
-      state.investments[sector]
-    );
-    localStorage.setItem(slot, JSON.stringify(state));
+  function change(key, delta) {
+    const cur = state.infrastructure?.[key] || 0;
+    const next = Math.max(0, cur + delta);
+    state.infrastructure = state.infrastructure || {};
+    state.infrastructure[key] = next;
+    state.log?.push({
+      t: Date.now(),
+      type: 'infra',
+      text: `Investimento em ${key}: ${WP.formatMoney(next)}/mês.`,
+    });
+    WP.saveState(slot, state);
+    render();
   }
+
+  render();
 });

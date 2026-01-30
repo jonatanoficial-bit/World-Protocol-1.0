@@ -1,106 +1,96 @@
 /*
- * commerce.js
+ * commerce.js — Centro de Comércio
  *
- * Handles the commerce module, allowing the player to buy and sell
- * resources. Each transaction updates the player's funds and inventory.
+ * Lightweight buy/sell system with dynamic prices per session.
+ * Inventory is stored in game state.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const backBtn = document.getElementById('backBtn');
-  backBtn.addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
+  backBtn.addEventListener('click', () => (location.href = 'index.html'));
 
-  // Load current game state
-  let state = null;
-  let slot = null;
-  for (let i = 1; i <= 3; i++) {
-    const key = `save-slot-${i}`;
-    const data = localStorage.getItem(key);
-    if (data) {
-      state = JSON.parse(data);
-      slot = key;
-      break;
-    }
-  }
-  if (!state) {
-    window.location.href = 'index.html';
-    return;
-  }
+  const slot = WP.getActiveSlot();
+  if (!slot) return (location.href = 'index.html');
+  let state = WP.loadState(slot);
+  if (!state) return (location.href = 'index.html');
 
-  // Initialize inventory if needed
-  if (!state.inventory) {
-    state.inventory = {};
-  }
+  state.inventory = state.inventory || { food: 0, oil: 0, metals: 0, weapons: 0 };
 
-  // Items available for trade with base prices
-  const items = [
-    { name: 'Comida', base: 50 },
-    { name: 'Petróleo', base: 100 },
-    { name: 'Armas', base: 500 },
+  const products = [
+    { key: 'food', name: 'Alimentos', base: 90 },
+    { key: 'oil', name: 'Petróleo', base: 320 },
+    { key: 'metals', name: 'Metais', base: 210 },
+    { key: 'weapons', name: 'Equipamentos', base: 520 },
   ];
 
-  const tbody = document.getElementById('commerceBody');
-
-  // Populate table rows
-  items.forEach((item) => {
-    const price = Math.round(item.base * (0.8 + Math.random() * 0.4));
-    const row = document.createElement('tr');
-    const nameCell = document.createElement('td');
-    nameCell.textContent = item.name;
-    const priceCell = document.createElement('td');
-    priceCell.textContent = `R$ ${price}`;
-    const qtyCell = document.createElement('td');
-    qtyCell.id = `${item.name}-qty`;
-    qtyCell.textContent = state.inventory[item.name] || 0;
-    const actionsCell = document.createElement('td');
-    const buyBtn = document.createElement('button');
-    buyBtn.className = 'btn';
-    buyBtn.textContent = 'Comprar';
-    buyBtn.addEventListener('click', () => buy(item.name, price));
-    const sellBtn = document.createElement('button');
-    sellBtn.className = 'btn secondary';
-    sellBtn.textContent = 'Vender';
-    sellBtn.addEventListener('click', () => sell(item.name, price));
-    actionsCell.appendChild(buyBtn);
-    actionsCell.appendChild(sellBtn);
-    row.appendChild(nameCell);
-    row.appendChild(priceCell);
-    row.appendChild(qtyCell);
-    row.appendChild(actionsCell);
-    tbody.appendChild(row);
-  });
-
-  function buy(name, price) {
-    if (state.funds < price) {
-      alert('Fundos insuficientes.');
-      return;
-    }
-    state.funds -= price;
-    state.inventory[name] = (state.inventory[name] || 0) + 1;
-    updateAndSave();
-  }
-
-  function sell(name, price) {
-    const qty = state.inventory[name] || 0;
-    if (qty <= 0) {
-      alert('Você não possui este item.');
-      return;
-    }
-    state.inventory[name] = qty - 1;
-    // Sale price is 70% of purchase price
-    state.funds += Math.round(price * 0.7);
-    updateAndSave();
-  }
-
-  function updateAndSave() {
-    // Update quantities
-    items.forEach((item) => {
-      const qty = state.inventory[item.name] || 0;
-      const cell = document.getElementById(`${item.name}-qty`);
-      if (cell) cell.textContent = qty;
+  // Session prices (stored in localStorage per month for consistency)
+  const priceKey = `wp_prices_${state.calendar.year}_${state.calendar.month}`;
+  let prices = null;
+  try { prices = JSON.parse(localStorage.getItem(priceKey) || 'null'); } catch {}
+  if (!prices) {
+    prices = {};
+    products.forEach(p => {
+      const swing = 0.75 + Math.random() * 0.8; // 0.75..1.55
+      prices[p.key] = Math.round(p.base * swing);
     });
-    // Save state
-    localStorage.setItem(slot, JSON.stringify(state));
+    localStorage.setItem(priceKey, JSON.stringify(prices));
   }
+
+  const tableBody = document.getElementById('productsBody');
+  const fundsEl = document.getElementById('fundsDisplay');
+
+  function render() {
+    if (fundsEl) fundsEl.textContent = WP.formatMoney(state.economy.funds);
+    tableBody.innerHTML = '';
+
+    products.forEach((p) => {
+      const tr = document.createElement('tr');
+      const price = prices[p.key];
+      const qty = state.inventory[p.key] || 0;
+      tr.innerHTML = `
+        <td>${p.name}</td>
+        <td>${WP.formatMoney(price)}</td>
+        <td>${qty}</td>
+        <td>
+          <button class="btn" data-buy="${p.key}">Comprar</button>
+          <button class="btn secondary" data-sell="${p.key}">Vender</button>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    tableBody.querySelectorAll('button[data-buy]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const key = b.getAttribute('data-buy');
+        const price = prices[key];
+        const amount = 10;
+        const cost = price * amount;
+        if (state.economy.funds < cost) return alert('Fundos insuficientes.');
+        state.economy.funds -= cost;
+        state.inventory[key] = (state.inventory[key] || 0) + amount;
+        state.log.push({ t: Date.now(), type: 'trade', text: `Comprou ${amount}x ${key}. (-${WP.formatMoney(cost)})` });
+        WP.saveState(slot, state);
+        render();
+      });
+    });
+
+    tableBody.querySelectorAll('button[data-sell]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const key = b.getAttribute('data-sell');
+        const price = prices[key];
+        const amount = 10;
+        const have = state.inventory[key] || 0;
+        if (have < amount) return alert('Você não tem estoque suficiente.');
+        // Sell at 85% market price (fees)
+        const gain = Math.round(price * amount * 0.85);
+        state.inventory[key] = have - amount;
+        state.economy.funds += gain;
+        state.log.push({ t: Date.now(), type: 'trade', text: `Vendeu ${amount}x ${key}. (+${WP.formatMoney(gain)})` });
+        WP.saveState(slot, state);
+        render();
+      });
+    });
+  }
+
+  render();
 });

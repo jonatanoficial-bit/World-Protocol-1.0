@@ -211,6 +211,7 @@
     w.tech = clamp(w.tech ?? 10, 0, 100);
     w.threat = clamp(w.threat ?? 20, 0, 100);
     w.dominance = clamp(w.dominance ?? 0, 0, 100);
+    w.eventQueue = Array.isArray(w.eventQueue) ? w.eventQueue : [];
     w.influence = w.influence || { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 };
     w.influence.americas = clamp(w.influence.americas ?? 0, 0, 100);
     w.influence.europe = clamp(w.influence.europe ?? 0, 0, 100);
@@ -461,6 +462,19 @@
     if (effects.tech != null) w.tech = clamp(w.tech + Number(effects.tech), 0, 100);
     if (effects.threat != null) w.threat = clamp(w.threat + Number(effects.threat), 0, 100);
     if (effects.dominance != null) w.dominance = clamp(w.dominance + Number(effects.dominance), 0, 100);
+
+    // Regional Influence (map)
+    if (effects.influence && typeof effects.influence === 'object') {
+      w.influence = w.influence || { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 };
+      for (const [k, v] of Object.entries(effects.influence)) {
+        if (w.influence[k] == null) w.influence[k] = 0;
+        w.influence[k] = clamp(w.influence[k] + Number(v), 0, 100);
+      }
+      // Keep dominance consistent with influence
+      if (typeof recomputeDominance === 'function') {
+        w.dominance = recomputeDominance(state);
+      }
+    }
 
     // Military
     if (effects.army != null) mil.army = Math.max(0, mil.army + Number(effects.army));

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const backBtn = document.getElementById('backBtn');
   backBtn.addEventListener('click', () => {
-    location.href = `index.html?resume=1&slot=${slot}`;
+    location.href = `index.html?resume=1&slot=${encodeURIComponent(slot)}`;
   });
 
   const elFunds = document.getElementById('fundsBadge');

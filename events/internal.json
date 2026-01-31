@@ -7,22 +7,36 @@
     "text": "Células insurgentes foram identificadas em distritos-chave. Uma operação pode neutralizar líderes, mas pode gerar danos colaterais.",
     "weight": 1.5,
     "cooldown": 10,
-    "conditions": { "threatAbove": 18 },
+    "conditions": {
+      "threatAbove": 18
+    },
     "choices": [
       {
         "label": "Operação cirúrgica",
         "hint": "Menor risco civil, maior custo.",
-        "effects": { "funds": -400000, "threat": -6, "stability": 2 }
+        "effects": {
+          "funds": -400000,
+          "threat": -6,
+          "stability": 2
+        }
       },
       {
         "label": "Operação total",
         "hint": "Eficaz, mas pesa politicamente.",
-        "effects": { "funds": -550000, "threat": -9, "popularity": -5, "pressure": 4 }
+        "effects": {
+          "funds": -550000,
+          "threat": -9,
+          "popularity": -5,
+          "pressure": 4
+        }
       },
       {
         "label": "Monitorar e esperar",
         "hint": "Economiza agora, aumenta risco.",
-        "effects": { "threat": 5, "stability": -3 }
+        "effects": {
+          "threat": 5,
+          "stability": -3
+        }
       }
     ]
   },
@@ -34,22 +48,35 @@
     "text": "Uma onda de deslocados chega à capital. Abrigos improvisados reduzem tensão, mas drenam recursos. Negligenciar pode explodir em protestos.",
     "weight": 1.2,
     "cooldown": 9,
-    "conditions": { "stabilityBelow": 70 },
+    "conditions": {
+      "stabilityBelow": 70
+    },
     "choices": [
       {
         "label": "Montar abrigos e assistência",
         "hint": "Aumenta apoio, custo imediato.",
-        "effects": { "funds": -450000, "popularity": 6, "pressure": -3 }
+        "effects": {
+          "funds": -450000,
+          "popularity": 6,
+          "pressure": -3
+        }
       },
       {
         "label": "Delegar a ONGs",
         "hint": "Custo menor, controle menor.",
-        "effects": { "funds": -200000, "popularity": 2 }
+        "effects": {
+          "funds": -200000,
+          "popularity": 2
+        }
       },
       {
         "label": "Bloquear entrada",
         "hint": "Evita gastos, aumenta tensão.",
-        "effects": { "pressure": 6, "popularity": -4, "stability": -2 }
+        "effects": {
+          "pressure": 6,
+          "popularity": -4,
+          "stability": -2
+        }
       }
     ]
   },
@@ -61,22 +88,35 @@
     "text": "Sindicatos anunciam greve em setores estratégicos. Conceder aumenta gastos; reprimir aumenta pressão internacional e instabilidade.",
     "weight": 1.1,
     "cooldown": 11,
-    "conditions": { "popularityBelow": 60 },
+    "conditions": {
+      "popularityBelow": 60
+    },
     "choices": [
       {
         "label": "Conceder reajuste",
         "hint": "Aumenta apoio, reduz renda líquida.",
-        "effects": { "funds": -350000, "popularity": 5, "pressure": -2 }
+        "effects": {
+          "funds": -350000,
+          "popularity": 5,
+          "pressure": -2
+        }
       },
       {
         "label": "Negociar com mediação",
         "hint": "Equilíbrio.",
-        "effects": { "funds": -150000, "popularity": 2 }
+        "effects": {
+          "funds": -150000,
+          "popularity": 2
+        }
       },
       {
         "label": "Reprimir com força",
         "hint": "Rápido, mas caro politicamente.",
-        "effects": { "stability": 3, "pressure": 7, "popularity": -6 }
+        "effects": {
+          "stability": 3,
+          "pressure": 7,
+          "popularity": -6
+        }
       }
     ]
   },
@@ -88,22 +128,35 @@
     "text": "Pesquisadores propõem um programa acelerado de IA para análise de padrões estratégicos. Pode aumentar tecnologia e renda no longo prazo.",
     "weight": 1.0,
     "cooldown": 14,
-    "conditions": { "fundsAbove": 5000000 },
+    "conditions": {
+      "fundsAbove": 5000000
+    },
     "choices": [
       {
         "label": "Financiar programa total",
         "hint": "Avanço alto.",
-        "effects": { "funds": -700000, "tech": 6, "baseIncome": 90000, "dominance": 1 }
+        "effects": {
+          "funds": -700000,
+          "tech": 6,
+          "baseIncome": 90000,
+          "dominance": 1
+        }
       },
       {
         "label": "Financiar parcialmente",
         "hint": "Menos custo.",
-        "effects": { "funds": -350000, "tech": 3, "baseIncome": 40000 }
+        "effects": {
+          "funds": -350000,
+          "tech": 3,
+          "baseIncome": 40000
+        }
       },
       {
         "label": "Adiar",
         "hint": "Sem custo, perde oportunidade.",
-        "effects": { "pressure": 2 }
+        "effects": {
+          "pressure": 2
+        }
       }
     ]
   },
@@ -115,22 +168,244 @@
     "text": "Uma transmissão nacional pode reduzir pânico e reforçar legitimidade. Falhas de execução, porém, podem gerar o efeito oposto.",
     "weight": 0.9,
     "cooldown": 10,
-    "conditions": { "pressureAbove": 25 },
+    "conditions": {
+      "pressureAbove": 25
+    },
     "choices": [
       {
         "label": "Transmissão com transparência",
         "hint": "Aumenta confiança.",
-        "effects": { "popularity": 5, "pressure": -4 }
+        "effects": {
+          "popularity": 5,
+          "pressure": -4
+        }
       },
       {
         "label": "Transmissão de força",
         "hint": "Eleva moral, aumenta pressão externa.",
-        "effects": { "morale": 4, "pressure": 3, "stability": 2 }
+        "effects": {
+          "morale": 4,
+          "pressure": 3,
+          "stability": 2
+        }
       },
       {
         "label": "Cancelar",
         "hint": "Evita riscos, aumenta rumores.",
-        "effects": { "pressure": 5, "popularity": -2 }
+        "effects": {
+          "pressure": 5,
+          "popularity": -2
+        }
+      }
+    ]
+  },
+  {
+    "id": "int_uprising_chain_01",
+    "type": "internal",
+    "title": "Insurreição Coordenada",
+    "speaker": "Agência Nacional",
+    "text": "Relatórios confirmam uma insurreição coordenada em centros urbanos. Gangues controlam rotas e tentam tomar prédios públicos.",
+    "weight": 1.6,
+    "cooldown": 10,
+    "conditions": {
+      "stabilityBelow": 70
+    },
+    "choices": [
+      {
+        "label": "Operação de choque imediata",
+        "hint": "Rápido, caro. Aumenta pressão.",
+        "effects": {
+          "funds": -650000,
+          "stability": 3,
+          "pressure": 6,
+          "morale": 2,
+          "influence": {
+            "americas": 2
+          }
+        },
+        "next": "int_uprising_chain_02A"
+      },
+      {
+        "label": "Negociar cessar-fogo local",
+        "hint": "Reduz tensão, risco de fraqueza.",
+        "effects": {
+          "pressure": -4,
+          "stability": -2,
+          "popularity": 2
+        },
+        "next": "int_uprising_chain_02B"
+      },
+      {
+        "label": "Mobilizar e isolar áreas",
+        "hint": "Custo moderado, efeito gradual.",
+        "effects": {
+          "funds": -300000,
+          "stability": 1,
+          "morale": 1
+        },
+        "next": "int_uprising_chain_02C"
+      }
+    ]
+  },
+  {
+    "id": "int_uprising_chain_02A",
+    "type": "internal",
+    "title": "Retaliação",
+    "speaker": "Inteligência",
+    "text": "A operação de choque neutralizou líderes, mas houve retaliação em bairros periféricos. Você mantém o ritmo ou recua?",
+    "weight": 0,
+    "cooldown": 99,
+    "conditions": {},
+    "choices": [
+      {
+        "label": "Manter ofensiva",
+        "hint": "Pode encerrar a crise. Alto custo.",
+        "effects": {
+          "funds": -450000,
+          "stability": 4,
+          "pressure": 4,
+          "influence": {
+            "americas": 3
+          }
+        }
+      },
+      {
+        "label": "Consolidar posições",
+        "hint": "Menos custo, crise pode durar.",
+        "effects": {
+          "funds": -180000,
+          "stability": 1,
+          "pressure": -1
+        }
+      },
+      {
+        "label": "Recuar e priorizar fronteiras",
+        "hint": "Interno piora.",
+        "effects": {
+          "stability": -5,
+          "threat": 6,
+          "influence": {
+            "americas": -3
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "int_uprising_chain_02B",
+    "type": "internal",
+    "title": "Acordo Frágil",
+    "speaker": "Gabinete Civil",
+    "text": "A negociação reduziu confrontos, mas grupos rivais exigem concessões. Um acordo frágil pode virar crise política.",
+    "weight": 0,
+    "cooldown": 99,
+    "conditions": {},
+    "choices": [
+      {
+        "label": "Conceder anistia limitada",
+        "hint": "Ganha tempo, custo político.",
+        "effects": {
+          "stability": 2,
+          "popularity": 2,
+          "pressure": 2
+        }
+      },
+      {
+        "label": "Exigir desarmamento imediato",
+        "hint": "Risco de ruptura.",
+        "effects": {
+          "stability": -2,
+          "pressure": 4,
+          "morale": 1
+        },
+        "next": "int_uprising_chain_03_break"
+      },
+      {
+        "label": "Interromper negociações",
+        "hint": "Volta ao caos.",
+        "effects": {
+          "stability": -6,
+          "threat": 8,
+          "influence": {
+            "americas": -4
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "int_uprising_chain_03_break",
+    "type": "internal",
+    "title": "Ruptura",
+    "speaker": "Agência Nacional",
+    "text": "A exigência de desarmamento rompeu o acordo. Células armadas retomam ataques e sabotagens.",
+    "weight": 0,
+    "cooldown": 99,
+    "conditions": {},
+    "choices": [
+      {
+        "label": "Lei marcial temporária",
+        "hint": "Controle, mas pressão sobe.",
+        "effects": {
+          "stability": 3,
+          "pressure": 7,
+          "funds": -500000,
+          "influence": {
+            "americas": 2
+          }
+        }
+      },
+      {
+        "label": "Operação cirúrgica",
+        "hint": "Menos dano, chance de falhar.",
+        "effects": {
+          "funds": -350000,
+          "stability": 1,
+          "pressure": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "int_uprising_chain_02C",
+    "type": "internal",
+    "title": "Cerco e Desgaste",
+    "speaker": "Comando Interno",
+    "text": "O isolamento funciona, mas exige logística. Se durar demais, sua economia sente.",
+    "weight": 0,
+    "cooldown": 99,
+    "conditions": {},
+    "choices": [
+      {
+        "label": "Acelerar com drones e bloqueios",
+        "hint": "Caro, eficiente.",
+        "effects": {
+          "funds": -420000,
+          "stability": 3,
+          "tech": 2,
+          "influence": {
+            "americas": 2
+          }
+        }
+      },
+      {
+        "label": "Manter por mais um mês",
+        "hint": "Custo contínuo.",
+        "effects": {
+          "funds": -220000,
+          "stability": 1
+        }
+      },
+      {
+        "label": "Suspender operações",
+        "hint": "Risco de expansão.",
+        "effects": {
+          "stability": -4,
+          "threat": 6,
+          "influence": {
+            "americas": -2
+          }
+        }
       }
     ]
   }

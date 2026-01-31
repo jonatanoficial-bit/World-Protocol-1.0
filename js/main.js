@@ -498,11 +498,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Lobby navigation cards (pass slot in URL for reliability on GitHub Pages)
   function goModule(page) {
-    const slot = WP.getActiveSlot();
-    if (!slot) return show('menu');
+    let slot = WP.getActiveSlot();
+    if (!slot || !WP.loadState(slot)) {
+      // fallback: first available save slot
+      for (const k of WP.SLOT_KEYS) {
+        if (WP.loadState(k)) { slot = k; break; }
+      }
+      if (slot) WP.setActiveSlot(slot);
+    }
+    if (!slot) { show('menu'); return; }
     location.href = `${page}?slot=${encodeURIComponent(slot)}`;
   }
-  document.getElementById('relationsBtn').addEventListener('click', () => goModule('relations.html'));
+  
+  // Robust click handling (prevents "cards não clicam" issues)
+  const lobbyButtons = document.querySelector('.lobby-buttons');
+  if (lobbyButtons) {
+    lobbyButtons.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('button');
+      if (!btn) return;
+      const id = btn.id;
+      if (id === 'relationsBtn') return goModule('relations.html');
+      if (id === 'warBtn') return goModule('war.html');
+      if (id === 'commerceBtn') return goModule('commerce.html');
+      if (id === 'infraBtn') return goModule('infrastructure.html');
+      if (id === 'mapBtn') return goModule('map.html');
+    });
+  }
+
+document.getElementById('relationsBtn').addEventListener('click', () => goModule('relations.html'));
   document.getElementById('warBtn').addEventListener('click', () => goModule('war.html'));
   document.getElementById('commerceBtn').addEventListener('click', () => goModule('commerce.html'));
   document.getElementById('infraBtn').addEventListener('click', () => goModule('infrastructure.html'));

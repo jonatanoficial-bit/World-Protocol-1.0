@@ -548,6 +548,8 @@ input[type="text"], select {
 .lobby-header { display: none; }
 
 .lobby-buttons {
+  position: relative;
+  z-index: 5;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
@@ -557,6 +559,7 @@ input[type="text"], select {
 }
 
 .lobby-btn {
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;

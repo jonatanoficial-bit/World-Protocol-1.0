@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa Global • World Protocol</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-screen" style="background-image:url('assets/images/background-war.png')">
+  <header class="topbar">
+    <button class="icon-btn" id="backBtn" aria-label="Voltar">←</button>
+    <div class="topbar-title">
+      <div class="kicker">WORLD PROTOCOL</div>
+      <div class="title">Mapa Global</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge" id="fundsBadge">—</span>
+    </div>
+  </header>
+
+  <main class="page" style="padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));">
+    <section class="map-shell">
+      <div class="map-grid">
+        <div>
+          <svg class="world-svg" viewBox="0 0 900 480" aria-label="Mapa mundial estilizado">
+            <defs>
+              <linearGradient id="ocean" x1="0" x2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.05)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+              </linearGradient>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <rect x="0" y="0" width="900" height="480" fill="url(#ocean)" rx="18"></rect>
+
+            <!-- Regions (stylized polygons) -->
+            <path id="r-americas" class="region" d="M115,95 C70,155 70,225 120,285 C145,315 165,345 170,385 C175,420 210,430 245,410 C270,394 278,365 258,345 C230,320 215,295 245,265 C275,235 270,200 245,170 C215,135 165,115 115,95 Z" />
+            <path id="r-europe" class="region" d="M470,120 C510,95 545,95 575,120 C590,135 595,150 580,165 C560,185 535,195 505,190 C480,186 455,170 450,150 C446,135 455,126 470,120 Z" />
+            <path id="r-africa" class="region" d="M520,205 C560,200 600,220 620,255 C640,290 635,335 605,365 C575,395 545,395 520,365 C495,335 485,280 500,250 C507,235 510,212 520,205 Z" />
+            <path id="r-asia" class="region" d="M600,125 C660,90 740,100 795,145 C830,175 835,220 800,250 C770,276 730,290 700,275 C675,262 650,255 635,230 C610,190 575,165 600,125 Z" />
+            <path id="r-oceania" class="region" d="M725,330 C760,310 800,315 828,340 C852,362 852,395 826,410 C792,430 748,420 725,395 C708,375 708,348 725,330 Z" />
+          </svg>
+
+          <div style="margin-top:12px;opacity:.9;font-size:13px;">
+            Toque em uma região para ver detalhes e executar ações de influência.
+          </div>
+        </div>
+
+        <aside class="legend">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;">
+              <div style="font-family:Orbitron,sans-serif;letter-spacing:1px;">Domínio Global</div>
+              <div class="badge" id="dominanceBadge">—</div>
+            </div>
+            <div class="bar" style="margin-top:10px;"><div id="dominanceBar"></div></div>
+            <div style="margin-top:10px;opacity:.85;font-size:13px;">
+              O domínio é calculado pela média ponderada das influências regionais.
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-family:Orbitron,sans-serif;letter-spacing:1px;margin-bottom:8px;">Região selecionada</div>
+            <div id="regionName" style="font-weight:700;font-size:16px;">—</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+              <span class="badge" id="regionInfluence">—</span>
+              <span class="badge" id="regionWars">—</span>
+            </div>
+            <div class="bar" style="margin-top:10px;"><div id="regionBar"></div></div>
+
+            <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+              <button class="btn" id="btnInvest">Campanha de influência</button>
+              <button class="btn secondary" id="btnIntel">Operação de inteligência</button>
+            </div>
+
+            <div style="margin-top:12px;opacity:.8;font-size:12.5px;line-height:1.35;">
+              Campanhas custam dinheiro e aumentam influência. Inteligência aumenta influência com risco de pressão internacional.
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-family:Orbitron,sans-serif;letter-spacing:1px;margin-bottom:8px;">Resumo regional</div>
+            <div id="regionList" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/core.js"></script>
+  <script src="js/map.js"></script>
+</body>
+</html>

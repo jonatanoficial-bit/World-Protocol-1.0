@@ -50,7 +50,12 @@
   function loadState(slotKey) {
     const raw = localStorage.getItem(slotKey);
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    try {
+      const st = JSON.parse(raw);
+      return normalizeState(st);
+    } catch {
+      return null;
+    }
   }
 
   function saveState(slotKey, state) {
@@ -169,6 +174,9 @@
         tech: 10,
         threat: 18,
         dominance: 2,
+        influence: { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 },
+        // Ongoing wars are stored here (simulation). Older saves may still have `atWarWith`.
+        wars: [],
         atWarWith: [],
         diplomacy: {},
       },
@@ -183,6 +191,208 @@
   }
 
   function monthName(m) { return MONTHS_PT[clamp(m - 1, 0, 11)] || '—'; }
+
+  // --- State normalization (forward compatible saves) ---
+  function normalizeState(state) {
+    if (!state || typeof state !== 'object') return state;
+    state.meta = state.meta || { version: '1.1.0', createdAt: Date.now(), updatedAt: Date.now() };
+    state.player = state.player || { name: 'Comandante', nation: '—' };
+    state.calendar = state.calendar || { year: 2030, month: 1 };
+    state.turn = state.turn || 0;
+    state.economy = state.economy || { funds: 0, baseIncome: 0, debt: 0 };
+    state.military = state.military || { army: 0, navy: 0, airforce: 0 };
+    state.infrastructure = state.infrastructure || { transport: 0, health: 0, education: 0, science: 0, space: 0 };
+    state.world = state.world || {};
+    const w = state.world;
+    w.stability = clamp(w.stability ?? 50, 0, 100);
+    w.popularity = clamp(w.popularity ?? 50, 0, 100);
+    w.pressure = clamp(w.pressure ?? 30, 0, 100);
+    w.morale = clamp(w.morale ?? 50, 0, 100);
+    w.tech = clamp(w.tech ?? 10, 0, 100);
+    w.threat = clamp(w.threat ?? 20, 0, 100);
+    w.dominance = clamp(w.dominance ?? 0, 0, 100);
+    w.influence = w.influence || { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 };
+    w.influence.americas = clamp(w.influence.americas ?? 0, 0, 100);
+    w.influence.europe = clamp(w.influence.europe ?? 0, 0, 100);
+    w.influence.africa = clamp(w.influence.africa ?? 0, 0, 100);
+    w.influence.asia = clamp(w.influence.asia ?? 0, 0, 100);
+    w.influence.oceania = clamp(w.influence.oceania ?? 0, 0, 100);
+    w.diplomacy = w.diplomacy || {};
+    w.wars = Array.isArray(w.wars) ? w.wars : [];
+    w.atWarWith = Array.isArray(w.atWarWith) ? w.atWarWith : [];
+
+    // Migrate legacy `atWarWith` into `wars` if wars is empty.
+    if (w.wars.length === 0 && w.atWarWith.length) {
+      w.atWarWith.forEach((target) => {
+        if (!target) return;
+        w.wars.push(createWarObject(state, target));
+      });
+    }
+
+    // keep legacy list in sync (for UI/backward compatibility)
+    w.atWarWith = [...new Set(w.wars.map(x => x.target))];
+
+    state.missions = Array.isArray(state.missions) ? state.missions : [];
+    state.pendingEvent = state.pendingEvent || null;
+    state.eventHistory = state.eventHistory || {};
+    state.log = Array.isArray(state.log) ? state.log : [];
+    state.flags = state.flags || { gameOver: false, victory: false };
+    return state;
+  }
+
+  // --- War Simulation ---
+  function warId() {
+    return 'war_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+  }
+
+  function estimateEnemyPower(target) {
+    // Light deterministic-ish seed based on string length and char codes
+    const s = String(target || 'X');
+    let score = 0;
+    for (let i = 0; i < s.length; i++) score += s.charCodeAt(i);
+    const base = 900 + (score % 900); // 900..1799
+    return base;
+  }
+
+  function ourPower(state, commitment) {
+    const mil = state.military;
+    const w = state.world;
+    const c = commitment || { army: 0.5, navy: 0.5, airforce: 0.5 };
+    const p =
+      (mil.army * 1.0 * c.army) +
+      (mil.navy * 6.0 * c.navy) +
+      (mil.airforce * 8.0 * c.airforce);
+    const moraleMul = 0.70 + (w.morale / 200); // 0.70..1.20
+    const techMul = 0.80 + (w.tech / 200);     // 0.80..1.30
+    const pressureMul = 1.05 - (w.pressure / 220); // 0.60..1.05
+    return Math.round(p * moraleMul * techMul * pressureMul);
+  }
+
+  function createWarObject(state, target) {
+    return {
+      id: warId(),
+      target,
+      startTurn: state.turn || 0,
+      progress: 0, // -100..100
+      intensity: 0.55, // 0.30..0.95
+      enemyPower: estimateEnemyPower(target),
+      commitment: { army: 0.55, navy: 0.45, airforce: 0.50 },
+      lastReport: '',
+    };
+  }
+
+  function startWar(state, target) {
+    normalizeState(state);
+    const w = state.world;
+    if (!target) return { ok: false, reason: 'invalid_target' };
+    if (w.wars.some(x => x.target === target)) return { ok: false, reason: 'already' };
+
+    const war = createWarObject(state, target);
+    w.wars.push(war);
+    w.atWarWith = [...new Set(w.wars.map(x => x.target))];
+    w.stability = clamp(w.stability - 3, 0, 100);
+    w.pressure = clamp(w.pressure + 4, 0, 100);
+    state.log.push({ t: Date.now(), type: 'war', text: `Guerra declarada contra ${target}.` });
+    return { ok: true, war };
+  }
+
+  function setWarCommitment(state, warIdValue, partial) {
+    normalizeState(state);
+    const war = state.world.wars.find(x => x.id === warIdValue);
+    if (!war) return { ok: false };
+    war.commitment = {
+      army: clamp(partial.army ?? war.commitment.army, 0.1, 1.0),
+      navy: clamp(partial.navy ?? war.commitment.navy, 0.1, 1.0),
+      airforce: clamp(partial.airforce ?? war.commitment.airforce, 0.1, 1.0),
+    };
+    return { ok: true };
+  }
+
+  function resolveWars(state) {
+    normalizeState(state);
+    const w = state.world;
+    if (!w.wars.length) return;
+
+    const reports = [];
+    const toRemove = [];
+
+    for (const war of w.wars) {
+      // enemy adapts slowly
+      war.enemyPower = Math.round(war.enemyPower * (0.985 + Math.random() * 0.03));
+      war.intensity = clamp(war.intensity + (Math.random() - 0.5) * 0.06, 0.30, 0.95);
+
+      const pOur = ourPower(state, war.commitment);
+      const pEnemy = Math.round(war.enemyPower * (0.85 + (w.threat / 160))); // threat makes enemies bolder
+
+      const swingBase = (pOur - pEnemy) / 120; // roughly -15..15
+      const swing = Math.round(swingBase + rand(-2, 2));
+      const delta = Math.round(swing * (0.55 + war.intensity));
+      war.progress = clamp(war.progress + delta, -100, 100);
+
+      // Losses / costs scale with intensity
+      const lossFactor = 0.0025 + (war.intensity * 0.004);
+      const armyLoss = Math.min(state.military.army, Math.max(0, Math.round(state.military.army * war.commitment.army * lossFactor)));
+      const navyLoss = Math.min(state.military.navy, Math.max(0, Math.round(state.military.navy * war.commitment.navy * lossFactor * 0.35)));
+      const airLoss = Math.min(state.military.airforce, Math.max(0, Math.round(state.military.airforce * war.commitment.airforce * lossFactor * 0.28)));
+      state.military.army -= armyLoss;
+      state.military.navy -= navyLoss;
+      state.military.airforce -= airLoss;
+
+      // War drains funds additionally (operations)
+      const opsCost = Math.round((pOur * 1.1) * (0.55 + war.intensity));
+      state.economy.funds -= opsCost;
+
+      // World impact
+      w.morale = clamp(w.morale - Math.round(armyLoss / 40) + rand(-1, 1), 0, 100);
+      w.stability = clamp(w.stability - Math.round(opsCost / 350000) + rand(-1, 1), 0, 100);
+      w.pressure = clamp(w.pressure + Math.round(war.intensity * 2) + rand(-1, 1), 0, 100);
+
+      let report = `Conflito contra ${war.target}: `;
+      if (delta >= 3) report += 'avanço significativo.';
+      else if (delta > 0) report += 'avanço leve.';
+      else if (delta === 0) report += 'frente estabilizada.';
+      else if (delta > -3) report += 'recuo leve.';
+      else report += 'recuo significativo.';
+
+      war.lastReport = report;
+      reports.push(report);
+
+      // End conditions
+      if (war.progress >= 100) {
+        // Victory
+        const gain = rand(6, 12);
+        const region = guessNationRegion(war.target);
+        w.influence = w.influence || { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 };
+        w.influence[region] = clamp((w.influence[region] ?? 0) + gain, 0, 100);
+        w.dominance = recomputeDominance(state);
+        w.pressure = clamp(w.pressure - rand(2, 6), 0, 100);
+        w.morale = clamp(w.morale + rand(4, 10), 0, 100);
+        state.log.push({ t: Date.now(), type: 'war_end', text: `Vitória contra ${war.target}. +${gain}% de Domínio.` });
+        toRemove.push(war.id);
+      }
+      if (war.progress <= -100) {
+        // Defeat
+        const loss = rand(6, 12);
+        const region = guessNationRegion(war.target);
+        w.influence = w.influence || { americas: 5, europe: 3, africa: 2, asia: 3, oceania: 1 };
+        w.influence[region] = clamp((w.influence[region] ?? 0) - loss, 0, 100);
+        w.dominance = recomputeDominance(state);
+        w.stability = clamp(w.stability - rand(8, 16), 0, 100);
+        w.popularity = clamp(w.popularity - rand(6, 14), 0, 100);
+        state.log.push({ t: Date.now(), type: 'war_end', text: `Derrota contra ${war.target}. -${loss}% de Domínio.` });
+        toRemove.push(war.id);
+      }
+    }
+
+    if (reports.length) {
+      state.log.push({ t: Date.now(), type: 'war_report', text: reports.join(' ') });
+    }
+
+    if (toRemove.length) {
+      w.wars = w.wars.filter(x => !toRemove.includes(x.id));
+      w.atWarWith = [...new Set(w.wars.map(x => x.target))];
+    }
+  }
 
   function calcUpkeep(state) {
     const mil = state.military;
@@ -361,6 +571,7 @@
   }
 
   function nextTurn(state) {
+    normalizeState(state);
     if (state.flags.gameOver || state.flags.victory) return;
 
     // If there is a pending event, force player to resolve it first.
@@ -380,6 +591,8 @@
     state.world.morale = clamp(state.world.morale + rand(-2, 2), 0, 100);
 
     // Narrative event (decision-based)
+    // Resolve ongoing wars (simulation) before rolling new narrative.
+    resolveWars(state);
     queueEvent(state);
     progressMissions(state);
 
@@ -399,7 +612,58 @@
     checkEndings(state);
   }
 
-  window.WP = {
+  
+  // ===== Global Influence (Regions) =====
+  const NATION_REGION = {
+    'Brasil': 'americas',
+    'Estados Unidos': 'americas',
+    'México': 'americas',
+    'Canadá': 'americas',
+    'Argentina': 'americas',
+    'Rússia': 'europe',
+    'Ucrânia': 'europe',
+    'Europa': 'europe',
+    'Reino Unido': 'europe',
+    'França': 'europe',
+    'Alemanha': 'europe',
+    'China': 'asia',
+    'Japão': 'asia',
+    'Índia': 'asia',
+    'Coreia do Sul': 'asia',
+    'Oriente Médio': 'asia',
+    'África': 'africa',
+    'Nigéria': 'africa',
+    'África do Sul': 'africa',
+    'Austrália': 'oceania',
+    'Oceania': 'oceania',
+  };
+
+  function guessNationRegion(nation) {
+    if (!nation) return 'americas';
+    if (NATION_REGION[nation]) return NATION_REGION[nation];
+    const t = String(nation).toLowerCase();
+    if (/(china|jap|india|core|asia|oriente)/.test(t)) return 'asia';
+    if (/(europa|fran|alem|russ|uk|reino|ucr)/.test(t)) return 'europe';
+    if (/(afri|niger|sul)/.test(t)) return 'africa';
+    if (/(austr|ocea)/.test(t)) return 'oceania';
+    return 'americas';
+  }
+
+  function recomputeDominance(state) {
+    const inf = state.world.influence || {};
+    const weights = { americas: 1.1, europe: 1.0, africa: 0.9, asia: 1.2, oceania: 0.6 };
+    let sum = 0;
+    let wsum = 0;
+    for (const k of Object.keys(weights)) {
+      sum += (Number(inf[k] ?? 0) * weights[k]);
+      wsum += weights[k];
+    }
+    return clamp(Math.round(sum / wsum), 0, 100);
+  }
+
+  function getNationRegionMap() { return { ...NATION_REGION }; }
+
+window.WP = {
     SLOT_KEYS,
     formatMoney,
     monthName,
@@ -416,7 +680,10 @@
     calcIncome,
     calcUpkeep,
     nextTurn,
+    startWar,
+    setWarCommitment,
     resolvePendingEvent,
     claimMissionReward,
+    getNationRegionMap,
   };
 })();

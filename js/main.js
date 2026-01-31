@@ -17,17 +17,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     lobby: document.getElementById('lobby'),
   };
 
-  let content = { nations: [], missions: [] };
-  try {
-    content = await WP.loadContent();
-  } catch {
-    // ignore
+
+  let content = { nations: [], missions: [], events: [] };
+
+  // Load content asynchronously so the UI never "trava" caso algum fetch falhe.
+  // (Isso evita ficar preso no index e garante que os botões sempre funcionem.)
+  (async () => {
+    try {
+      const loaded = await WP.loadContent();
+      if (loaded) content = loaded;
+    } catch {
+      // ignore
+    }
+
+    // Feed event engine after content arrives
+    try { WP.setEventPool(content.events || []); } catch {}
+
+    // Populate nation select dynamically (base + DLC)
+    const nationSelect = document.getElementById('nation');
+    if (nationSelect && content.nations?.length) {
+      nationSelect.innerHTML = '';
+      content.nations.forEach((n) => {
+        const opt = document.createElement('option');
+        opt.value = n;
+        opt.textContent = n;
+        nationSelect.appendChild(opt);
+      });
+    }
+  })();
+
+  // Populate nation select with a safe fallback immediately (so New Game works offline).
+  const nationSelectFallback = document.getElementById('nation');
+  if (nationSelectFallback && nationSelectFallback.children.length === 0) {
+    ['Brasil','Estados Unidos','Europa','Rússia','China','Japão'].forEach((n) => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n;
+      nationSelectFallback.appendChild(opt);
+    });
   }
 
-  // Feed the event engine once at app start.
-  try { WP.setEventPool(content.events || []); } catch {}
 
-  // Populate nation select dynamically (base + DLC)
+  // Splash -> Menu
   const nationSelect = document.getElementById('nation');
   if (nationSelect && content.nations?.length) {
     nationSelect.innerHTML = '';
@@ -40,8 +71,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function show(name) {
-    Object.values(screens).forEach((el) => el.classList.remove('active'));
-    screens[name].classList.add('active');
+    Object.values(screens).forEach((el) => { if (el) el.classList.remove('active'); });
+    if (screens[name]) screens[name].classList.add('active');
   }
 
   function getUrlParam(key) {
@@ -76,16 +107,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const backToMenuFromNew = document.getElementById('backToMenuFromNew');
   const backToMenuFromLoad = document.getElementById('backToMenuFromLoad');
 
-  newGameBtn.addEventListener('click', () => {
+  if (newGameBtn) newGameBtn.addEventListener('click', () => {
     populateNewSlots();
     show('newGame');
   });
-  continueBtn.addEventListener('click', () => {
+  if (continueBtn) continueBtn.addEventListener('click', () => {
     populateSaves();
     show('loadGame');
   });
-  backToMenuFromNew.addEventListener('click', () => show('menu'));
-  backToMenuFromLoad.addEventListener('click', () => show('menu'));
+  if (backToMenuFromNew) backToMenuFromNew.addEventListener('click', () => show('menu'));
+  if (backToMenuFromLoad) backToMenuFromLoad.addEventListener('click', () => show('menu'));
 
   // New game
   const newGameForm = document.getElementById('newGameForm');
@@ -123,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  newGameForm.addEventListener('submit', (e) => {
+  if (newGameForm) newGameForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('playerName').value.trim();
     const nation = document.getElementById('nation').value;
@@ -235,6 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hudDate = document.getElementById('hudDate');
   const hudFunds = document.getElementById('hudFunds');
   const hudIncome = document.getElementById('hudIncome');
+  const hudMap = document.getElementById('hudMap');
   const hudMissions = document.getElementById('hudMissions');
   const hudNextTurn = document.getElementById('hudNextTurn');
   const hudSave = document.getElementById('hudSave');
@@ -354,7 +386,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    // Save
+      // Map
+  if (hudMap) {
+    hudMap.onclick = () => {
+      const slot = WP.getActiveSlot() || 1;
+      window.location.href = `map.html?slot=${slot}`;
+    };
+  }
+
+// Save
     hudSave.onclick = () => {
       const fresh = WP.loadState(slot);
       WP.saveState(slot, fresh);
@@ -466,6 +506,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('warBtn').addEventListener('click', () => goModule('war.html'));
   document.getElementById('commerceBtn').addEventListener('click', () => goModule('commerce.html'));
   document.getElementById('infraBtn').addEventListener('click', () => goModule('infrastructure.html'));
+  const mapBtn = document.getElementById('mapBtn');
+  if (mapBtn) mapBtn.addEventListener('click', () => goModule('map.html'));
 
   // Toast helper (uses existing CSS .toast)
   function showToast(text) {

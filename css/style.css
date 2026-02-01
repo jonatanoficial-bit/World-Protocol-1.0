@@ -537,7 +537,6 @@ input[type="text"], select {
   background-image: url('../assets/images/background-war.png');
   background-size: cover;
   background-position: center;
-  display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 1rem;

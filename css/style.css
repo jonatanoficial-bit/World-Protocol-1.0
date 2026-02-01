@@ -863,3 +863,26 @@ th {
   width:0%;
   background: rgba(79,154,255,0.65);
 }
+
+
+/* ===== Build tag ===== */
+.build-tag{
+  margin: 10px 0 2px;
+  font-size: 12px;
+  opacity: .75;
+  letter-spacing: .4px;
+}
+.build-tag.inline{
+  margin-left: 8px;
+}
+
+/* ===== Click/touch reliability ===== */
+.bg-hero{ position: relative; }
+.bg-hero::before{ z-index: 0; }
+.screen > *{ position: relative; z-index: 2; }
+
+.lobby-btn, .btn, .hud-icon{
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.lobby-btn{ cursor: pointer; }

@@ -17,6 +17,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     lobby: document.getElementById('lobby'),
   };
 
+  // Build info (helps validate cache / deployments)
+  const build = (window.WP_BUILD && (WP_BUILD.version || WP_BUILD.date)) ? `Build ${WP_BUILD.version} • ${WP_BUILD.date}` : '';
+  const buildTag = document.getElementById('buildTag');
+  const buildTagLobby = document.getElementById('buildTagLobby');
+  if (buildTag) buildTag.textContent = build || '';
+  if (buildTagLobby) buildTagLobby.textContent = build || '';
+
+  // Fail-safe: show JS errors as toast to diagnose in mobile quickly
+  window.addEventListener('error', (e) => {
+    try { WP.toast?.(`Erro: ${e.message}`); } catch {}
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    try { WP.toast?.(`Erro: ${e.reason?.message || e.reason}`); } catch {}
+  });
+
+
 
   let content = { nations: [], missions: [], events: [] };
 
@@ -512,17 +528,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Robust click handling (prevents "cards não clicam" issues)
   const lobbyButtons = document.querySelector('.lobby-buttons');
+  const lobbyHandle = (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn) return;
+    const id = btn.id;
+    if (id === 'relationsBtn') return goModule('relations.html');
+    if (id === 'warBtn') return goModule('war.html');
+    if (id === 'commerceBtn') return goModule('commerce.html');
+    if (id === 'infraBtn') return goModule('infrastructure.html');
+    if (id === 'mapBtn') return goModule('map.html');
+  };
   if (lobbyButtons) {
-    lobbyButtons.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('button');
-      if (!btn) return;
-      const id = btn.id;
-      if (id === 'relationsBtn') return goModule('relations.html');
-      if (id === 'warBtn') return goModule('war.html');
-      if (id === 'commerceBtn') return goModule('commerce.html');
-      if (id === 'infraBtn') return goModule('infrastructure.html');
-      if (id === 'mapBtn') return goModule('map.html');
-    });
+    lobbyButtons.addEventListener('click', lobbyHandle);
+    lobbyButtons.addEventListener('pointerup', lobbyHandle);
+    lobbyButtons.addEventListener('touchstart', lobbyHandle, { passive: true });
   }
 
 document.getElementById('relationsBtn').addEventListener('click', () => goModule('relations.html'));

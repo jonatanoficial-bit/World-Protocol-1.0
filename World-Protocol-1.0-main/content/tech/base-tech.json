@@ -1,0 +1,73 @@
+[
+  {
+    "id": "tech_logistics_1",
+    "tier": 1,
+    "category": "Economia",
+    "name": "Logística Nacional",
+    "desc": "Otimiza transporte e distribuição. Aumenta renda e reduz custos operacionais.",
+    "turns": 3,
+    "costPerTurn": 220000,
+    "effects": {
+      "incomeMult": 0.05,
+      "upkeepMult": -0.03
+    }
+  },
+  {
+    "id": "tech_cyber_1",
+    "tier": 1,
+    "category": "Inteligência",
+    "name": "Ciberdefesa",
+    "desc": "Reduz riscos de operações e melhora estabilidade contra sabotagens.",
+    "turns": 3,
+    "costPerTurn": 240000,
+    "effects": {
+      "intelRiskReduction": 0.12,
+      "stability": 2
+    }
+  },
+  {
+    "id": "tech_drones_1",
+    "tier": 1,
+    "category": "Defesa",
+    "name": "Drones Táticos",
+    "desc": "Aumenta eficiência militar e reduz perdas em campanhas prolongadas.",
+    "turns": 4,
+    "costPerTurn": 320000,
+    "effects": {
+      "warEff": 0.08,
+      "morale": 2
+    }
+  },
+  {
+    "id": "tech_satellite_1",
+    "tier": 2,
+    "category": "Ciência & Espaço",
+    "requires": [
+      "tech_cyber_1"
+    ],
+    "name": "Satélite de Reconhecimento",
+    "desc": "Melhora influência global e reduz pressão por falhas operacionais.",
+    "turns": 5,
+    "costPerTurn": 420000,
+    "effects": {
+      "influenceGainMult": 0.1,
+      "intelRiskReduction": 0.08,
+      "pressure": -2
+    }
+  },
+  {
+    "id": "tech_industry_1",
+    "tier": 2,
+    "category": "Economia",
+    "requires": [
+      "tech_logistics_1"
+    ],
+    "name": "Indústria de Defesa",
+    "desc": "Amplia produção e base econômica. Aumenta renda mensal.",
+    "turns": 5,
+    "costPerTurn": 450000,
+    "effects": {
+      "incomeMult": 0.1
+    }
+  }
+]

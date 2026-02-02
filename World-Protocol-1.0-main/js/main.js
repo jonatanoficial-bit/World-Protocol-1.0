@@ -17,6 +17,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     lobby: document.getElementById('lobby'),
   };
 
+  // Build info (helps validate cache / deployments)
+  const build = (window.WP_BUILD && (WP_BUILD.version || WP_BUILD.date)) ? `Build ${WP_BUILD.version} • ${WP_BUILD.date}` : '';
+  const buildTag = document.getElementById('buildTag');
+  const buildTagLobby = document.getElementById('buildTagLobby');
+  if (buildTag) buildTag.textContent = build || '';
+  if (buildTagLobby) buildTagLobby.textContent = build || '';
+
+  // Fail-safe: show JS errors as toast to diagnose in mobile quickly
+  window.addEventListener('error', (e) => {
+    try { WP.toast?.(`Erro: ${e.message}`); } catch {}
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    try { WP.toast?.(`Erro: ${e.reason?.message || e.reason}`); } catch {}
+  });
+
+
 
   let content = { nations: [], missions: [], events: [] };
 
@@ -26,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const loaded = await WP.loadContent();
       if (loaded) content = loaded;
+      try { WP.setContent(content); } catch {}
     } catch {
       // ignore
     }
@@ -71,8 +88,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function show(name) {
-    Object.values(screens).forEach((el) => { if (el) el.classList.remove('active'); });
-    if (screens[name]) screens[name].classList.add('active');
+    // Ultra robust: remove active from ALL screens in DOM (prevents overlay bugs on mobile)
+    document.querySelectorAll('.screen').forEach((el) => el.classList.remove('active'));
+    const target = screens[name] || document.getElementById(name);
+    if (target) target.classList.add('active');
+    enforceSingleActive();
+  }
+
+  function enforceSingleActive() {
+    const active = document.querySelectorAll('.screen.active');
+    if (active.length <= 1) return;
+    active.forEach((el, i) => { if (i < active.length - 1) el.classList.remove('active'); });
   }
 
   function getUrlParam(key) {
@@ -266,6 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hudDate = document.getElementById('hudDate');
   const hudFunds = document.getElementById('hudFunds');
   const hudIncome = document.getElementById('hudIncome');
+  const hudResearch = document.getElementById('hudResearch');
   const hudMap = document.getElementById('hudMap');
   const hudMissions = document.getElementById('hudMissions');
   const hudNextTurn = document.getElementById('hudNextTurn');
@@ -386,7 +413,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-      // Map
+      // Research
+  if (hudResearch) {
+    hudResearch.onclick = () => {
+      const slot = WP.getActiveSlot() || WP.SLOT_KEYS[0];
+      window.location.href = `research.html?slot=${encodeURIComponent(slot)}`;
+    };
+  }
+
+  // Map
   if (hudMap) {
     hudMap.onclick = () => {
       const slot = WP.getActiveSlot() || 1;
@@ -512,17 +547,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Robust click handling (prevents "cards não clicam" issues)
   const lobbyButtons = document.querySelector('.lobby-buttons');
+  const lobbyHandle = (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn) return;
+    const id = btn.id;
+    if (id === 'relationsBtn') return goModule('relations.html');
+    if (id === 'warBtn') return goModule('war.html');
+    if (id === 'commerceBtn') return goModule('commerce.html');
+    if (id === 'infraBtn') return goModule('infrastructure.html');
+    if (id === 'mapBtn') return goModule('map.html');
+      if (id === 'researchBtn') return goModule('research.html');
+  };
   if (lobbyButtons) {
-    lobbyButtons.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('button');
-      if (!btn) return;
-      const id = btn.id;
-      if (id === 'relationsBtn') return goModule('relations.html');
-      if (id === 'warBtn') return goModule('war.html');
-      if (id === 'commerceBtn') return goModule('commerce.html');
-      if (id === 'infraBtn') return goModule('infrastructure.html');
-      if (id === 'mapBtn') return goModule('map.html');
-    });
+    lobbyButtons.addEventListener('click', lobbyHandle);
+    lobbyButtons.addEventListener('pointerup', lobbyHandle);
+    lobbyButtons.addEventListener('touchstart', lobbyHandle, { passive: true });
   }
 
 document.getElementById('relationsBtn').addEventListener('click', () => goModule('relations.html'));

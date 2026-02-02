@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administração - Estratégia 2030</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-admin">
+    <header class="module-header">
+      <h1>Área Administrativa</h1>
+    </header>
+    <main class="module-content" id="adminContent">
+      <!-- Login form -->
+      <div id="loginSection">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <label for="adminUser">Usuário:</label>
+          <input type="text" id="adminUser" required />
+          <label for="adminPass">Senha:</label>
+          <input type="password" id="adminPass" required />
+          <button type="submit" class="btn">Entrar</button>
+        </form>
+      </div>
+      <!-- Admin panel -->
+      <div id="panelSection" class="hidden">
+        <h2>Gerenciar DLCs</h2>
+        <div id="dlcList" class="nations-list"></div>
+        <h3>Adicionar Nova DLC</h3>
+        <form id="addDlcForm">
+          <label for="dlcName">Nome da DLC:</label>
+          <input type="text" id="dlcName" required />
+          <label for="dlcVersion">Versão:</label>
+          <input type="text" id="dlcVersion" required />
+          <button type="submit" class="btn">Adicionar</button>
+        </form>
+      </div>
+    </main>
+    <script src="admin.js"></script>
+  </body>
+</html>

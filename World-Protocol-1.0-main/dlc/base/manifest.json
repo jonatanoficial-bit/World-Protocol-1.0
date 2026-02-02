@@ -1,0 +1,26 @@
+{
+  "name": "Base Game",
+  "version": "1.0.0",
+  "nations": [
+    "Brasil",
+    "Estados Unidos",
+    "Rússia",
+    "China",
+    "Europa",
+    "Japão"
+  ],
+  "missions": [
+    {
+      "title": "Proteger a capital",
+      "description": "Restaure a paz após o ataque ao governo.",
+      "reward": 500000,
+      "completed": false
+    },
+    {
+      "title": "Expandir economia",
+      "description": "Aumente o saldo para R$10.000.000.",
+      "reward": 1000000,
+      "completed": false
+    }
+  ]
+}

@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  function applyScreenBg(el){
+    if(!el) return;
+    const bg = el.getAttribute && el.getAttribute('data-bg');
+    if(bg){ el.style.backgroundImage = `url('${bg}')`; }
+  }
+
   function show(name) {
     // Ultra robust: remove active from ALL screens in DOM (prevents overlay bugs on mobile)
     document.querySelectorAll('.screen').forEach((el) => el.classList.remove('active'));

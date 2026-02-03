@@ -1,5 +1,5 @@
 // Auto-generated build info
-window.WP_BUILD = Object.freeze({ version: "1.0.8", date: "2026-02-01" });
+window.WP_BUILD = Object.freeze({ version: "1.0.9", date: "2026-02-01" });
 
 ;(function(){
   try{

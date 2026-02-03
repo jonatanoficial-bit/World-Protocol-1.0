@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-screen" style="background-image:url('assets/images/background-war.png')">
+<body class="bg-screen" style="background-image:url('assets/images/background-main.png')">
   <header class="topbar">
     <button class="icon-btn" id="backBtn" aria-label="Voltar">←</button>
     <div class="topbar-title">
@@ -23,7 +23,9 @@
     <section class="map-shell">
       <div class="map-grid">
         <div>
-          <svg class="world-svg" viewBox="0 0 900 480" aria-label="Mapa mundial estilizado">
+          <div class="map-layer">
+            <img class="map-img" src="https://commons.wikimedia.org/wiki/Special:FilePath/BlankMap-World.svg" alt="Mapa mundial (online)" loading="lazy" />
+            <svg class="world-svg" viewBox="0 0 900 480" aria-label="Mapa mundial estilizado">
             <defs>
               <linearGradient id="ocean" x1="0" x2="1">
                 <stop offset="0%" stop-color="rgba(255,255,255,0.05)"/>
@@ -47,6 +49,7 @@
             <path id="r-asia" class="region" d="M600,125 C660,90 740,100 795,145 C830,175 835,220 800,250 C770,276 730,290 700,275 C675,262 650,255 635,230 C610,190 575,165 600,125 Z" />
             <path id="r-oceania" class="region" d="M725,330 C760,310 800,315 828,340 C852,362 852,395 826,410 C792,430 748,420 725,395 C708,375 708,348 725,330 Z" />
           </svg>
+          </div>
 
           <div style="margin-top:12px;opacity:.9;font-size:13px;">
             Toque em uma região para ver detalhes e executar ações de influência.
@@ -93,8 +96,8 @@
     </section>
   </main>
 
-  <script defer src="js/build.js?v=1.0.5"></script>
-  <script defer src="js/core.js?v=1.0.5"></script>
-  <script defer src="js/map.js?v=1.0.4"></script>
+  <script defer src="js/build.js?v=1.0.9"></script>
+  <script defer src="js/core.js?v=1.0.9"></script>
+  <script defer src="js/map.js?v=1.0.9"></script>
 </body>
 </html>

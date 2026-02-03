@@ -20,7 +20,7 @@
   </div>
 
   <!-- Main menu -->
-  <div id="menu" class="screen bg-hero">
+  <div \1 data-bg="assets/images/background-main.png">
     <div class="aaa-menu">
       <h1 class="aaa-title">WORLD PROTOCOL</h1>
       <p class="aaa-sub">You were not elected. You were activated.</p>
@@ -33,7 +33,7 @@
   </div>
 
   <!-- New game screen -->
-  <div id="new-game" class="screen bg-hero">
+  <div \1 data-bg="assets/images/background-main.png">
     <h2>Novo Jogo</h2>
     <p class="subtle" style="margin-top:-6px; max-width:720px; text-align:center">
       Escolha um <b>slot</b>, defina seu <b>nome</b> e a <b>nação</b> que você comandará.
@@ -58,14 +58,14 @@
   </div>
 
   <!-- Load game screen -->
-  <div id="load-game" class="screen bg-hero scrollable">
+  <div \1 data-bg="assets/images/background-main.png">
     <h2>Continuar Jogo</h2>
     <div id="saveSlots" class="save-slots"></div>
     <button id="backToMenuFromLoad" class="btn secondary">Voltar</button>
   </div>
 
   <!-- Story message screen -->
-  <div id="message" class="screen bg-hero">
+  <div id="message" class="screen bg-screen" data-bg="assets/images/background-main.png">
     <div class="message-frame">
       <div class="msg-top">
         <div class="badge">COMUNICAÇÃO OFICIAL</div>
@@ -83,7 +83,7 @@
   </div>
 
   <!-- Lobby screen -->
-  <div id="lobby" class="screen lobby-screen">
+  <div \1 data-bg="assets/images/background-war.png">
     <div style="position:absolute; top: calc(12px + var(--safe-t)); left:12px; right:12px; text-align:center; font-family:Orbitron,sans-serif; opacity:.92; letter-spacing:1px;">
       Comando Central <span id="buildTagLobby" class="build-tag inline"></span>
     </div>
@@ -162,7 +162,7 @@
         <button class="hud-icon" id="hudResearch" title="Pesquisa">🧪</button>
         <button class="hud-icon" id="hudMap" title="Mapa">🌐</button>
         <button class="hud-icon" id="hudMissions" title="Missões">📌</button>
-        <button class="hud-icon" id="hudNextTurn" title="Próximo turno">⏭</button>
+        <button class="hud-icon" id="hudNextTurn" class="hud-icon hud-primary" title="Próximo turno">⏭</button>
         <button class="hud-icon" id="hudSave" title="Salvar">💾</button>
       </div>
     </div>
@@ -202,8 +202,8 @@
   <!-- Main script for page navigation and game state -->
   
 
-  <script defer src="js/build.js?v=1.0.8"></script>
-  <script defer src="js/core.js?v=1.0.8"></script>
-  <script defer src="js/main.js?v=1.0.8"></script>
+  <script defer src="js/build.js?v=1.0.9"></script>
+  <script defer src="js/core.js?v=1.0.9"></script>
+  <script defer src="js/main.js?v=1.0.9"></script>
 </body>
 </html>

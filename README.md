@@ -1,6 +1,13 @@
+
+## Mapas (Online)
+O módulo **Mapa Global** utiliza um mapa vetorial gratuito carregado online (Wikimedia Commons – *BlankMap-World.svg*).
+Se o usuário estiver offline, o mapa pode não carregar (o overlay e a jogabilidade continuam).
+
+Licença/atribuição: ver a página do arquivo no Wikimedia Commons (CC BY-SA / PD conforme o arquivo).
+
 ## Build
 
-Build atual: **1.0.7** (Tech Tree / Pesquisa)
+Build atual: **1.0.9** (UI AAA Pass + Map Online + Backgrounds fix) (Tech Tree / Pesquisa)
 
 # Estratégia 2030
 

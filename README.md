@@ -1,3 +1,7 @@
+## Build
+
+Build atual: **1.0.7** (Tech Tree / Pesquisa)
+
 # Estratégia 2030
 
 Este projeto é um protótipo de jogo de estratégia de guerra ambientado em um mundo fictício no ano de 2030. Ele foi pensado para dispositivos móveis (mobile‑first), com uma interface premium digna de um produto AAA, mas também funciona perfeitamente em navegadores de desktop. Todo o código utiliza apenas **HTML**, **CSS** e **JavaScript** puro, sem frameworks.

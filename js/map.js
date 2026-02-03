@@ -138,7 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     state.economy.funds -= cost;
-    const gain = 2 + Math.floor(Math.random() * 4); // 2..5
+    const mult = 1 + (state.modifiers?.influenceGainMult || 0);
+    const gain = Math.round((2 + Math.floor(Math.random() * 4)) * mult); // 2..5 * mult
     state.world.influence[selected] = clamp((state.world.influence[selected] ?? 0) + gain, 0, 100);
     state.log.push({ t: Date.now(), type: 'map', text: `Campanha de influência em ${selected}. +${gain}% (custo ${money(cost)}).` });
     saveState(state);
@@ -154,10 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     state.economy.funds -= cost;
-    const gain = 3 + Math.floor(Math.random() * 6); // 3..8
+    const mult = 1 + (state.modifiers?.influenceGainMult || 0);
+    const gain = Math.round((3 + Math.floor(Math.random() * 6)) * mult); // 3..8 * mult
     const risk = Math.random();
     state.world.influence[selected] = clamp((state.world.influence[selected] ?? 0) + gain, 0, 100);
-    if (risk < 0.35){
+    const rr = (state.modifiers?.intelRiskReduction || 0);
+    const threshold = Math.max(0.10, 0.35 - rr);
+    if (risk < threshold){
       state.world.pressure = clamp(state.world.pressure + 6, 0, 100);
       state.log.push({ t: Date.now(), type: 'intel', text: `Operação de inteligência exposta. Pressão internacional aumentou.` });
       toast(`+${gain}% influência, mas a operação foi exposta (+pressão).`);

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "sanction_warning",
+    "trigger": "high_aggression",
+    "nation": "ONU",
+    "text": "A comunidade internacional expressa preocupação com suas ações militares recentes.",
+    "choices": [
+      {
+        "label": "Ignorar advertência",
+        "effects": {
+          "pressure": 5,
+          "relations": -5
+        }
+      },
+      {
+        "label": "Prometer contenção",
+        "effects": {
+          "pressure": -2,
+          "relations": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "economic_sanction",
+    "trigger": "very_high_aggression",
+    "nation": "Bloco Ocidental",
+    "text": "Sanções econômicas foram impostas ao seu país.",
+    "choices": [
+      {
+        "label": "Retaliar",
+        "effects": {
+          "incomeMult": -0.1,
+          "relations": -8
+        }
+      },
+      {
+        "label": "Negociar",
+        "effects": {
+          "incomeMult": -0.05,
+          "relations": -2
+        }
+      }
+    ]
+  }
+]

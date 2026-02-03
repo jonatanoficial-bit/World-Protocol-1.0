@@ -31,6 +31,7 @@
   // In-memory event pool (loaded at app start). Kept out of the save state so
   // DLCs can extend events without migrating player saves.
   let EVENT_POOL = [];
+  let CONTENT_CACHE = { nations: [], missions: [], events: [], tech: [] };
   function setEventPool(list) {
     EVENT_POOL = Array.isArray(list) ? list : [];
   }
@@ -134,6 +135,7 @@
       return true;
     });
 
+    CONTENT_CACHE = { ...content, events: [] };
     return content;
   }
 
@@ -153,6 +155,19 @@
       player: { name, nation },
       calendar: { year: 2030, month: 1 },
       turn: 0,
+      modifiers: {
+        incomeMult: 0,
+        upkeepMult: 0,
+        warEff: 0,
+        influenceGainMult: 0,
+        intelRiskReduction: 0,
+      },
+      research: {
+        activeId: null,
+        progress: 0,
+        completed: [],
+      },
+
       economy: {
         funds: 12_500_000,
         baseIncome: 500_000,
@@ -167,6 +182,7 @@
         space: 0,
       },
       world: {
+        relations: 0,
         stability: 62,
         popularity: 55,
         pressure: 28,
@@ -444,11 +460,103 @@
     return true;
   }
 
+
+  function clamp01(n){ return Math.max(0, Math.min(1, n)); }
+
+  function hasTech(state, techId){
+    return state?.research?.completed?.includes(techId);
+  }
+
+  function canResearch(state, tech, techMap){
+    const req = tech.requires || [];
+    return req.every((id) => hasTech(state, id));
+  }
+
+  function applyTechEffects(state, effects){
+    effects = effects || {};
+    const m = state.modifiers;
+    if (effects.incomeMult) m.incomeMult += Number(effects.incomeMult);
+    if (effects.upkeepMult) m.upkeepMult += Number(effects.upkeepMult);
+    if (effects.warEff) m.warEff += Number(effects.warEff);
+    if (effects.influenceGainMult) m.influenceGainMult += Number(effects.influenceGainMult);
+    if (effects.intelRiskReduction) m.intelRiskReduction += Number(effects.intelRiskReduction);
+
+    // also allow direct world/economy tweaks
+    if (effects.stability) state.world.stability = clamp(state.world.stability + Number(effects.stability), 0, 100);
+    if (effects.morale) state.world.morale = clamp(state.world.morale + Number(effects.morale), 0, 100);
+    if (effects.pressure) state.world.pressure = clamp(state.world.pressure + Number(effects.pressure), 0, 100);
+  }
+
+  function rebuildModifiersFromCompleted(state){
+    state.modifiers = { incomeMult: 0, upkeepMult: 0, warEff: 0, influenceGainMult: 0, intelRiskReduction: 0 };
+    const content = CONTENT_CACHE || {};
+    const techList = Array.isArray(content.tech) ? content.tech : [];
+    const techMap = Object.fromEntries(techList.map(t => [t.id, t]));
+    for (const id of (state.research.completed || [])){
+      const t = techMap[id];
+      if (t) applyTechEffects(state, t.effects);
+    }
+  }
+
+  
+  function tickDiplomacy(state){
+    const aggr = state.world.threat || 0;
+    const list = (CONTENT_CACHE.diplomacy || []);
+    if (!list.length) return;
+
+    if (aggr > 70 && !state.flags?.sanctioned){
+      const ev = list.find(e=>e.trigger==='high_aggression');
+      if (ev){ state.pendingEvent = ev; }
+    }
+    if (aggr > 85 && !state.flags?.sanctioned){
+      const ev = list.find(e=>e.trigger==='very_high_aggression');
+      if (ev){ state.pendingEvent = ev; state.flags = {...state.flags, sanctioned:true}; }
+    }
+  }
+
+function tickResearch(state){
+    const r = state.research;
+    if (!r?.activeId) return;
+
+    const content = CONTENT_CACHE || {};
+    const techList = Array.isArray(content.tech) ? content.tech : [];
+    const techMap = Object.fromEntries(techList.map(t => [t.id, t]));
+    const t = techMap[r.activeId];
+    if (!t) { r.activeId = null; r.progress = 0; return; }
+
+    // monthly cost
+    const cost = Number(t.costPerTurn || 0);
+    if (cost > 0){
+      if (state.economy.funds < cost){
+        state.log.push({ t: Date.now(), type: 'research', text: `Pesquisa pausada por falta de fundos: ${t.name}.` });
+        return;
+      }
+      state.economy.funds -= cost;
+    }
+
+    const step = 100 / Math.max(1, Number(t.turns || 3));
+    r.progress = Math.min(100, (r.progress || 0) + step);
+
+    if (r.progress >= 100){
+      r.progress = 0;
+      r.activeId = null;
+      if (!state.research.completed.includes(t.id)) state.research.completed.push(t.id);
+      applyTechEffects(state, t.effects);
+      state.log.push({ t: Date.now(), type: 'research', text: `Pesquisa concluída: ${t.name}.` });
+    }
+  }
+
   function applyEffects(state, effects = {}) {
     const w = state.world;
     const e = state.economy;
     const mil = state.military;
 
+    // Research + Modifiers
+    state.modifiers = state.modifiers || { incomeMult: 0, upkeepMult: 0, warEff: 0, influenceGainMult: 0, intelRiskReduction: 0 };
+    state.research = state.research || { activeId: null, progress: 0, completed: [] };
+    state.research.completed = Array.isArray(state.research.completed) ? state.research.completed : [];
+
+    state.world.relations = state.world.relations ?? 0;
     // Economy
     if (effects.funds != null) e.funds += Number(effects.funds);
     if (effects.baseIncome != null) e.baseIncome += Number(effects.baseIncome);
@@ -562,6 +670,12 @@
     state.pendingEvent = null;
     checkEndings(state);
     return { ok: true };
+  }
+
+  function setActiveResearch(state, techId) {
+    state.research = state.research || { activeId: null, progress: 0, completed: [] };
+    state.research.activeId = techId;
+    state.research.progress = 0;
   }
 
   function claimMissionReward(state, missionId) {
@@ -689,6 +803,10 @@ window.WP = {
     findFreeSlot,
     loadContent,
     setEventPool,
+    getContent: () => CONTENT_CACHE,
+    setContent: (c) => { CONTENT_CACHE = c || CONTENT_CACHE; },
+    setActiveResearch,
+
     getEventPool,
     createNewState,
     calcIncome,
@@ -698,6 +816,10 @@ window.WP = {
     setWarCommitment,
     resolvePendingEvent,
     claimMissionReward,
+    rebuildModifiersFromCompleted,
+    hasTech,
+    canResearch,
+
     getNationRegionMap,
   };
 })();

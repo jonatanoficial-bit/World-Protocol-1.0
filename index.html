@@ -24,6 +24,7 @@
     <div class="aaa-menu">
       <h1 class="aaa-title">WORLD PROTOCOL</h1>
       <p class="aaa-sub">You were not elected. You were activated.</p>
+      <div id="buildTag" class="build-tag"></div>
       <div class="aaa-actions">
         <button id="newGameBtn" class="btn">NOVO JOGO</button>
         <button id="continueBtn" class="btn secondary">CONTINUAR</button>
@@ -84,7 +85,7 @@
   <!-- Lobby screen -->
   <div id="lobby" class="screen lobby-screen">
     <div style="position:absolute; top: calc(12px + var(--safe-t)); left:12px; right:12px; text-align:center; font-family:Orbitron,sans-serif; opacity:.92; letter-spacing:1px;">
-      Comando Central
+      Comando Central <span id="buildTagLobby" class="build-tag inline"></span>
     </div>
 
     <div class="lobby-buttons">
@@ -140,6 +141,17 @@
       </button>
     </div>
 
+          <button id="researchBtn" class="lobby-btn" aria-label="Pesquisa">
+        <div class="thumb" style="background-image:url('assets/images/background-infrastructure.png')"></div>
+        <div class="meta">
+          <span style="display:inline-grid;place-items:center;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.12);">🧪</span>
+          <div style="text-align:left">
+            <span>Pesquisa</span>
+            <div class="hint">Tecnologia • bônus • progresso</div>
+          </div>
+        </div>
+      </button>
+
     <!-- HUD AAA (fixo) -->
     <div class="hud" id="hud">
       <div class="pill" id="hudCommander">—</div>
@@ -147,6 +159,7 @@
       <div class="pill grow" id="hudFunds">—</div>
       <div class="pill" id="hudIncome">—</div>
       <div class="hud-btns">
+        <button class="hud-icon" id="hudResearch" title="Pesquisa">🧪</button>
         <button class="hud-icon" id="hudMap" title="Mapa">🌐</button>
         <button class="hud-icon" id="hudMissions" title="Missões">📌</button>
         <button class="hud-icon" id="hudNextTurn" title="Próximo turno">⏭</button>
@@ -187,7 +200,10 @@
   </div>
 
   <!-- Main script for page navigation and game state -->
-  <script src="js/core.js"></script>
-  <script src="js/main.js"></script>
+  
+
+  <script defer src="js/build.js?v=1.0.8"></script>
+  <script defer src="js/core.js?v=1.0.8"></script>
+  <script defer src="js/main.js?v=1.0.8"></script>
 </body>
 </html>

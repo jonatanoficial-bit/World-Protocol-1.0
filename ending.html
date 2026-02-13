@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Final • World Protocol</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-screen" style="background-image:url('assets/images/background-war.png')">
+  <div class="vignette"></div>
+
+  <main class="page scrollable" style="padding:18px;min-height:100vh;display:grid;place-items:center;">
+    <section class="glass-panel ending-panel">
+      <div class="ending-head">
+        <div class="ending-kicker">WORLD PROTOCOL</div>
+        <div class="ending-title" id="endingTitle">—</div>
+        <div class="ending-sub" id="endingSub">—</div>
+        <div class="badge" id="endingBuild" style="margin-top:10px">—</div>
+      </div>
+
+      <div class="divider" style="margin:16px 0;"></div>
+
+      <div class="ending-grid">
+        <div class="ending-card">
+          <div class="label">País</div>
+          <div class="value" id="statNation">—</div>
+        </div>
+        <div class="ending-card">
+          <div class="label">Ano</div>
+          <div class="value" id="statYear">—</div>
+        </div>
+        <div class="ending-card">
+          <div class="label">Domínio Global</div>
+          <div class="value" id="statDom">—</div>
+        </div>
+        <div class="ending-card">
+          <div class="label">Saldo</div>
+          <div class="value" id="statFunds">—</div>
+        </div>
+        <div class="ending-card">
+          <div class="label">Estabilidade</div>
+          <div class="value" id="statStab">—</div>
+        </div>
+        <div class="ending-card">
+          <div class="label">Pressão</div>
+          <div class="value" id="statPress">—</div>
+        </div>
+        <div class="ending-card" style="grid-column:1 / -1;">
+          <div class="label">Resumo da sua gestão</div>
+          <div class="value" id="endingSummary" style="font-size:14px;opacity:.9;line-height:1.5;font-weight:600;">—</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px;">
+        <button class="btn secondary" id="btnBackLobby">Voltar ao Lobby</button>
+        <button class="btn" id="btnNew">Novo Jogo</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/build.js?v=1.1.5"></script>
+  <script src="js/core.js?v=1.1.5"></script>
+  <script src="js/audio.js?v=1.1.5"></script>
+  <script src="js/ending.js?v=1.1.5"></script>
+</body>
+</html>

@@ -499,7 +499,45 @@
   }
 
   
-  function tickDiplomacy(state){
+  
+  function checkEnd(state){
+    if (state.ending) return state.ending;
+
+    const dom = state.world.dominance ?? 0;
+    const funds = state.economy.funds ?? 0;
+    const stab = state.world.stability ?? 0;
+    const pressure = state.world.pressure ?? 0;
+    const threat = state.world.threat ?? 0;
+
+    // Victory: dominate world
+    if (dom >= 100){
+      state.ending = { type:'victory', reason:'Domínio global atingido.', at: Date.now() };
+      return state.ending;
+    }
+
+    // Economic collapse
+    if (funds <= -1000000){
+      state.ending = { type:'collapse', reason:'Falência do Estado: dívida impagável.', at: Date.now() };
+      return state.ending;
+    }
+
+    // Coup / internal collapse
+    if (stab <= 8 && pressure >= 85){
+      state.ending = { type:'coup', reason:'Golpe interno durante crise extrema.', at: Date.now() };
+      return state.ending;
+    }
+
+    // Defeat: threat extreme + very low military readiness
+    const readiness = (state.military?.army||0) + (state.military?.navy||0) + (state.military?.air||0);
+    if (threat >= 95 && readiness < 80){
+      state.ending = { type:'defeat', reason:'Derrota militar após colapso defensivo.', at: Date.now() };
+      return state.ending;
+    }
+
+    return null;
+  }
+
+function tickDiplomacy(state){
     const aggr = state.world.threat || 0;
     const list = (CONTENT_CACHE.diplomacy || []);
     if (!list.length) return;
@@ -554,6 +592,7 @@ function tickResearch(state){
     // Research + Modifiers
     state.modifiers = state.modifiers || { incomeMult: 0, upkeepMult: 0, warEff: 0, influenceGainMult: 0, intelRiskReduction: 0 };
     state.research = state.research || { activeId: null, progress: 0, completed: [] };
+    state.ending = state.ending || null;
     state.research.completed = Array.isArray(state.research.completed) ? state.research.completed : [];
 
     state.world.relations = state.world.relations ?? 0;
@@ -570,6 +609,17 @@ function tickResearch(state){
     if (effects.tech != null) w.tech = clamp(w.tech + Number(effects.tech), 0, 100);
     if (effects.threat != null) w.threat = clamp(w.threat + Number(effects.threat), 0, 100);
     if (effects.dominance != null) w.dominance = clamp(w.dominance + Number(effects.dominance), 0, 100);
+
+    // Diplomacy
+    if (effects.relations != null) w.relations = clamp(w.relations + Number(effects.relations), -100, 100);
+
+    // Modifiers (delta) — used by cinematic/diplomacy events
+    if (effects.incomeMult != null) state.modifiers.incomeMult += Number(effects.incomeMult);
+    if (effects.upkeepMult != null) state.modifiers.upkeepMult += Number(effects.upkeepMult);
+    if (effects.warEff != null) state.modifiers.warEff += Number(effects.warEff);
+    if (effects.influenceGainMult != null) state.modifiers.influenceGainMult += Number(effects.influenceGainMult);
+    if (effects.intelRiskReduction != null) state.modifiers.intelRiskReduction += Number(effects.intelRiskReduction);
+
 
     // Regional Influence (map)
     if (effects.influence && typeof effects.influence === 'object') {
@@ -674,6 +724,7 @@ function tickResearch(state){
 
   function setActiveResearch(state, techId) {
     state.research = state.research || { activeId: null, progress: 0, completed: [] };
+    state.ending = state.ending || null;
     state.research.activeId = techId;
     state.research.progress = 0;
   }
@@ -819,6 +870,7 @@ window.WP = {
     rebuildModifiersFromCompleted,
     hasTech,
     canResearch,
+    checkEnd,
 
     getNationRegionMap,
   };

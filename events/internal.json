@@ -38,7 +38,9 @@
           "stability": -3
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_refugee_wave_02",
@@ -78,7 +80,9 @@
           "stability": -2
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_strike_03",
@@ -118,7 +122,9 @@
           "popularity": -6
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_science_breakthrough_04",
@@ -158,7 +164,9 @@
           "pressure": 2
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_public_broadcast_05",
@@ -197,7 +205,9 @@
           "popularity": -2
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_uprising_chain_01",
@@ -245,7 +255,9 @@
         },
         "next": "int_uprising_chain_02C"
       }
-    ]
+    ],
+    "urgency": "critical",
+    "cinematic": true
   },
   {
     "id": "int_uprising_chain_02A",
@@ -289,7 +301,9 @@
           }
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_uprising_chain_02B",
@@ -331,7 +345,9 @@
           }
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_uprising_chain_03_break",
@@ -364,7 +380,9 @@
           "pressure": 3
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   },
   {
     "id": "int_uprising_chain_02C",
@@ -407,6 +425,8 @@
           }
         }
       }
-    ]
+    ],
+    "urgency": "high",
+    "cinematic": true
   }
 ]

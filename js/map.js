@@ -3,12 +3,15 @@
  * run influence campaigns. Works with URL slot (?slot=1..3).
  */
 document.addEventListener('DOMContentLoaded', () => {
+  try{ window.WP_AUDIO && WP_AUDIO.startAmbience(); }catch{}
+
   const qs = new URLSearchParams(location.search);
   const slot = Number(qs.get('slot') || localStorage.getItem('wp_active_slot') || 1);
   localStorage.setItem('wp_active_slot', String(slot));
 
   const backBtn = document.getElementById('backBtn');
   backBtn.addEventListener('click', () => {
+    try{ WP_AUDIO && WP_AUDIO.click(); }catch{}
     location.href = `index.html?resume=1&slot=${encodeURIComponent(slot)}`;
   });
 

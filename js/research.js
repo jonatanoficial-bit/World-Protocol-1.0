@@ -2,12 +2,15 @@
  * Uses WP core state + tech catalog from /content/tech/base-tech.json (and DLC tech).
  */
 document.addEventListener('DOMContentLoaded', async () => {
+  try{ window.WP_AUDIO && WP_AUDIO.startAmbience(); }catch{}
+
   const qs = new URLSearchParams(location.search);
   const slot = qs.get('slot') || localStorage.getItem('wp_active_slot') || WP.SLOT_KEYS[0];
   localStorage.setItem('wp_active_slot', String(slot));
 
   const backBtn = document.getElementById('backBtn');
   backBtn.addEventListener('click', () => {
+    try{ WP_AUDIO && WP_AUDIO.click(); }catch{}
     location.href = `index.html?resume=1&slot=${encodeURIComponent(slot)}`;
   });
 

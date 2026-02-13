@@ -9,6 +9,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  try{ window.WP_AUDIO && WP_AUDIO.startAmbience(); }catch{}
+
   const params = new URLSearchParams(location.search);
   const urlSlot = params.get('slot');
   if (urlSlot && WP.SLOT_KEYS.includes(urlSlot) && WP.loadState(urlSlot)) {
@@ -25,8 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const backBtn = document.getElementById('backBtn');
   backBtn.addEventListener('click', () => {
-    const s = WP.getActiveSlot();
-    location.href = s ? `index.html?resume=1&slot=${encodeURIComponent(s)}` : 'index.html';
+    try{ WP_AUDIO && WP_AUDIO.click(); }catch{}
+    location.href = `index.html?resume=1&slot=${encodeURIComponent(slot)}`;
   });
 
   // UI refs

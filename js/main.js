@@ -8,6 +8,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const skipMessageBtn = document.getElementById('skipMessage') || document.getElementById('messageSkip');
+
   const screens = {
     splash: document.getElementById('splash'),
     menu: document.getElementById('menu'),
@@ -94,11 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function show(name) {
-    // Ultra robust: remove active from ALL screens in DOM (prevents overlay bugs on mobile)
     document.querySelectorAll('.screen').forEach((el) => el.classList.remove('active'));
-    const target = screens[name] || document.getElementById(name);
-    if (target) target.classList.add('active');
-    enforceSingleActive();
+    const el = screens[name] || document.getElementById(name);
+    if (el) {
+      el.classList.add('active');
+      applyScreenBg(el);
+    }
   }
 
   function enforceSingleActive() {
@@ -275,10 +278,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       skip.onclick = () => {
         cursor.remove();
         finish();
+        try{
+          const slot = WP.getActiveSlot() || WP.SLOT_KEYS[0];
+          const st = WP.loadState(slot);
+          st.flags = st.flags || {};
+          st.flags.introDone = true;
+          WP.saveState(slot, st);
+        }catch{}
       };
     }
 
-    cont.onclick = () => startLobby();
+    cont.onclick = () => {
+      try{
+        const slot = WP.getActiveSlot() || WP.SLOT_KEYS[0];
+        const st = WP.loadState(slot);
+        st.flags = st.flags || {};
+        st.flags.introDone = true;
+        WP.saveState(slot, st);
+      }catch{}
+      startLobby();
+    };
   }
 
   // Lobby
@@ -298,6 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const hudDate = document.getElementById('hudDate');
   const hudFunds = document.getElementById('hudFunds');
   const hudIncome = document.getElementById('hudIncome');
+  const hudAudio = document.getElementById('hudAudio');
   const hudResearch = document.getElementById('hudResearch');
   const hudMap = document.getElementById('hudMap');
   const hudMissions = document.getElementById('hudMissions');
@@ -368,13 +388,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     const { slot, st } = pack;
+    st.flags = st.flags || {};
+    if (st.flags.introDone !== true) {
+      st.flags.introDone = true;
+      try{ WP.saveState(slot, st); }catch{}
+    }
     show('lobby');
+    try{ WP_AUDIO && WP_AUDIO.startAmbience(); }catch{}
     updateHud(st);
 
     // If the player left the game with an unresolved decision, bring it back.
     if (st.pendingEvent) {
       // Use a microtask to ensure the modal elements are laid out.
-      setTimeout(() => showEventModal(st, slot), 50);
+      setTimeout(() => { (showCinematicEvent(st) || showEventModal(st, slot)); }, 50);
     }
 
     // Ensure we are at base URL (prevents odd "returns" after module navigation)
@@ -419,7 +445,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-      // Research
+      // Intro skip
+  if (skipMessageBtn) {
+    skipMessageBtn.onclick = () => {
+      try{ WP_AUDIO && WP_AUDIO.click(); }catch{}
+      const slot = WP.getActiveSlot() || WP.SLOT_KEYS[0];
+      const state = WP.loadState(slot);
+      state.flags = state.flags || {};
+      state.flags.introDone = true;
+      WP.saveState(slot, state);
+      show('lobby');
+      updateHudFromState(state);
+      try{ WP_AUDIO && WP_AUDIO.startAmbience(); }catch{}
+    };
+  }
+
+    // Audio
+  if (hudAudio && window.WP_AUDIO) {
+    const syncIcon = () => { hudAudio.textContent = WP_AUDIO.isEnabled() ? '🔊' : '🔇'; };
+    syncIcon();
+    hudAudio.onclick = () => { WP_AUDIO.setEnabled(!WP_AUDIO.isEnabled()); syncIcon(); WP_AUDIO.click(); };
+  }
+
+  // Research
   if (hudResearch) {
     hudResearch.onclick = () => {
       const slot = WP.getActiveSlot() || WP.SLOT_KEYS[0];

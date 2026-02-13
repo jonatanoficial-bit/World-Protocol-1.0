@@ -12,6 +12,7 @@
   />
 </head>
 <body class="app-shell">
+  <div class="vignette"></div>
   <!-- Splash screen with logo -->
   <div id="splash" class="screen active bg-hero">
     <div class="logo-container">
@@ -20,7 +21,7 @@
   </div>
 
   <!-- Main menu -->
-  <div \1 data-bg="assets/images/background-main.png">
+  <div id="menu" class="screen bg-screen" data-bg="assets/images/background-main.png">
     <div class="aaa-menu">
       <h1 class="aaa-title">WORLD PROTOCOL</h1>
       <p class="aaa-sub">You were not elected. You were activated.</p>
@@ -33,7 +34,7 @@
   </div>
 
   <!-- New game screen -->
-  <div \1 data-bg="assets/images/background-main.png">
+  <div id="new-game" class="screen bg-screen" data-bg="assets/images/background-main.png">
     <h2>Novo Jogo</h2>
     <p class="subtle" style="margin-top:-6px; max-width:720px; text-align:center">
       Escolha um <b>slot</b>, defina seu <b>nome</b> e a <b>nação</b> que você comandará.
@@ -58,7 +59,7 @@
   </div>
 
   <!-- Load game screen -->
-  <div \1 data-bg="assets/images/background-main.png">
+  <div id="load-game" class="screen bg-screen" data-bg="assets/images/background-main.png">
     <h2>Continuar Jogo</h2>
     <div id="saveSlots" class="save-slots"></div>
     <button id="backToMenuFromLoad" class="btn secondary">Voltar</button>
@@ -83,7 +84,7 @@
   </div>
 
   <!-- Lobby screen -->
-  <div \1 data-bg="assets/images/background-war.png">
+  <div id="lobby" class="screen bg-screen" data-bg="assets/images/background-war.png">
     <div style="position:absolute; top: calc(12px + var(--safe-t)); left:12px; right:12px; text-align:center; font-family:Orbitron,sans-serif; opacity:.92; letter-spacing:1px;">
       Comando Central <span id="buildTagLobby" class="build-tag inline"></span>
     </div>
@@ -159,6 +160,7 @@
       <div class="pill grow" id="hudFunds">—</div>
       <div class="pill" id="hudIncome">—</div>
       <div class="hud-btns">
+        <button class="hud-icon" id="hudAudio" title="Áudio">🔊</button>
         <button class="hud-icon" id="hudResearch" title="Pesquisa">🧪</button>
         <button class="hud-icon" id="hudMap" title="Mapa">🌐</button>
         <button class="hud-icon" id="hudMissions" title="Missões">📌</button>
@@ -202,8 +204,26 @@
   <!-- Main script for page navigation and game state -->
   
 
-  <script defer src="js/build.js?v=1.0.9"></script>
-  <script defer src="js/core.js?v=1.0.9"></script>
-  <script defer src="js/main.js?v=1.0.9"></script>
+  <script defer src="js/build.js?v=1.1.5"></script>
+  <script defer src="js/core.js?v=1.1.5"></script>
+  <script defer src="js/main.js?v=1.1.5"></script>
+
+  <!-- Cinematic Event Overlay -->
+  <div id="cinematicOverlay" class="cinematic-overlay" aria-hidden="true">
+    <div id="cinematicCard" class="cinematic-card">
+      <div class="cinematic-top">
+        <div class="cinematic-seal" id="cinSeal">COMUNICAÇÃO OFICIAL</div>
+        <div class="cinematic-meta">
+          <div class="cinematic-title" id="cinTitle">—</div>
+          <div class="cinematic-speaker" id="cinSpeaker">—</div>
+        </div>
+      </div>
+      <div class="cinematic-body">
+        <div class="cinematic-text" id="cinText"></div>
+      </div>
+      <div class="cinematic-choices" id="cinChoices"></div>
+    </div>
+  </div>
+
 </body>
 </html>

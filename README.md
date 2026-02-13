@@ -1,3 +1,25 @@
+## Versão / Build
+
+O jogo exibe no topo a **Build + data e hora** (para confirmar atualização no GitHub Pages).
+
+## Eventos Cinematográficos
+
+Eventos importantes agora aparecem em modo cinematográfico (overlay fullscreen) com urgência (informativo/alto/crítico) e efeitos de som/typewriter.
+
+## Finais
+
+O jogo termina quando:
+- Domínio global ≥ 100% (Vitória)
+- Dívida extrema (Colapso Econômico)
+- Estabilidade muito baixa + pressão alta (Golpe)
+- Ameaça extrema + prontidão militar baixa (Derrota)
+
+A tela de final exibe um resumo da gestão e permite voltar ao Lobby ou iniciar um novo jogo.
+
+## Áudio
+
+O jogo inclui microsons e ambiência via WebAudio (sem arquivos externos). O usuário pode ligar/desligar pelo ícone 🔊/🔇 no HUD.
+
 
 ## Mapas (Online)
 O módulo **Mapa Global** utiliza um mapa vetorial gratuito carregado online (Wikimedia Commons – *BlankMap-World.svg*).
@@ -7,7 +29,7 @@ Licença/atribuição: ver a página do arquivo no Wikimedia Commons (CC BY-SA /
 
 ## Build
 
-Build atual: **1.0.9** (UI AAA Pass + Map Online + Backgrounds fix) (Tech Tree / Pesquisa)
+Build atual: **1.1.5** (Hotfix: Screens + Intro + Cinematic Events) (Eventos Cinematográficos + Urgência + Cutscene Overlay) (Finais Cinematográficos + Resumo da Gestão) (Cinematics + Sound + Module Identity) (UI AAA Pass + Map Online + Backgrounds fix) (Tech Tree / Pesquisa)
 
 # Estratégia 2030
 
